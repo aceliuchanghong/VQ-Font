@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import glob
 import argparse
 import json
@@ -18,7 +19,10 @@ def save_lmdb(env_path, font_path_char_dict):
     Returns:
         [json]: {font name: [ch1, ch2, ch3, ch4, ....]}
     """
-    env = lmdb.open(env_path, map_size=1024 ** 4)
+    try:
+        env = lmdb.open(env_path, map_size=1024 ** 4)
+    except Exception as e:
+        print(e)
     valid_dict = {}
 
     #write_file = open('log.txt', 'w', encoding='utf-8')
@@ -200,11 +204,12 @@ if __name__ == "__main__":
     """
     python ./build_dataset/build_meta4train.py \
       --saving_dir ./z_using_files/lmdb_path/ \
-      --content_font ./z_using_files/content_font \
-      --train_font_dir ./z_using_files/train_font \
-      --val_font_dir ./z_using_files/val_font \
+      --content_font ./z_using_files/imgs/content_images \
+      --train_font_dir ./z_using_files/imgs/train_images \
+      --val_font_dir ./z_using_files/imgs/val_images \
       --seen_unis_file ./meta/train_unis.json \
       --unseen_unis_file ./meta/val_unis.json
+python build_dataset/build_meta4train.py --saving_dir z_using_files/lmdb_path/  --content_font z_using_files/imgs/content_images --train_font_dir z_using_files/imgs/train_images  --val_font_dir z_using_files/imgs/val_images  --seen_unis_file meta/train_unis.json  --unseen_unis_file meta/val_unis.json    
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--saving_dir", help="directory where your lmdb file will be saved")

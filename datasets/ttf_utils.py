@@ -52,7 +52,7 @@ def render(font, char, size=(128, 128), pad=20):
         start_w = pad
         start_h = (width - height) // 2 + pad
 
-    img = Image.new("L", (max_size+(pad*2), max_size+(pad*2)), 255)
+    img = Image.new("L", (max_size + (pad * 2), max_size + (pad * 2)), 255)
     draw = ImageDraw.Draw(img)
     draw.text((start_w, start_h), char, font=font)
     img = img.resize(size, 2)
@@ -60,7 +60,8 @@ def render(font, char, size=(128, 128), pad=20):
 
 
 def font2image(input_file, output_paths, characters, size):
-    input_file_name = input_file.split(os.sep)[-1].split('.')[0]  # get output file_name
+    input_file_name = input_file.split('/')[-1].split('.')[0]
+    # print('mmL:', input_file_name)
     output_path = os.path.join(output_paths, input_file_name)
 
     if not os.path.exists(output_path):
