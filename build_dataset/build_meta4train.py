@@ -197,6 +197,15 @@ def build_train_meta(args):
 
 
 if __name__ == "__main__":
+    """
+    python ./build_dataset/build_meta4train.py \
+      --saving_dir ./z_using_files/lmdb_path/ \
+      --content_font ./z_using_files/content_font \
+      --train_font_dir ./z_using_files/train_font \
+      --val_font_dir ./z_using_files/val_font \
+      --seen_unis_file ./meta/train_unis.json \
+      --unseen_unis_file ./meta/val_unis.json
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--saving_dir", help="directory where your lmdb file will be saved")
     parser.add_argument("--content_font", help="root path of the content font images")
