@@ -49,7 +49,7 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
         model = torch.nn.DataParallel(model)
 
     # 优化器
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, capturable=True)
 
     logger.info("Training started")
     model.train()
@@ -127,7 +127,7 @@ def main():
     val_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_val/'
     model_path = '../weight/VQ-VAE_Params_chn_step_10000.pth'
     train_model(train_imgs_path, val_imgs_path, model_path=model_path,
-                num_training_updates=10000, batch_size=128)
+                num_training_updates=10000, batch_size=1536)
 
 
 if __name__ == "__main__":
