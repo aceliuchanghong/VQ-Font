@@ -202,14 +202,8 @@ def build_train_meta(args):
 
 if __name__ == "__main__":
     """
-    python ./build_dataset/build_meta4train.py \
-      --saving_dir ./z_using_files/lmdb_path/ \
-      --content_font ./z_using_files/imgs/content_images \
-      --train_font_dir ./z_using_files/imgs/train_images \
-      --val_font_dir ./z_using_files/imgs/val_images \
-      --seen_unis_file ./meta/train_unis.json \
-      --unseen_unis_file ./meta/val_unis.json
-python build_dataset/build_meta4train.py --saving_dir z_using_files/lmdb_path/  --content_font z_using_files/imgs/content_images --train_font_dir z_using_files/imgs/train_images  --val_font_dir z_using_files/imgs/val_images  --seen_unis_file meta/train_unis.json  --unseen_unis_file meta/val_unis.json    
+    conda activate VQFont
+    python build_dataset/build_meta4train.py --saving_dir z_using_files/lmdb_path/  --content_font z_using_files/imgs/content_images --train_font_dir z_using_files/imgs/train_images  --val_font_dir z_using_files/imgs/val_images  --seen_unis_file meta/train_unis.json  --unseen_unis_file meta/val_unis.json    
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--saving_dir", help="directory where your lmdb file will be saved")
@@ -221,5 +215,3 @@ python build_dataset/build_meta4train.py --saving_dir z_using_files/lmdb_path/  
     args = parser.parse_args()
     build_meta4train_lmdb(args)
     build_train_meta(args)
-
-

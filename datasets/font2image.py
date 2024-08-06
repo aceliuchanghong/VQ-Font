@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import argparse
 from ttf_utils import *
 from tqdm import tqdm
 
@@ -14,6 +14,8 @@ def process_fonts(font_file, image_file, char2img_list=char2img_list):
     :param image_file: Path to the directory where images will be saved
     :param char2img_list: List of characters to generate images for
     """
+    if not os.path.exists(image_file):
+        os.makedirs(image_file)
     fonts = os.listdir(font_file)
 
     for font in tqdm(fonts):
@@ -28,6 +30,20 @@ def process_fonts(font_file, image_file, char2img_list=char2img_list):
 
 
 if __name__ == '__main__':
-    # process_fonts('../z_using_files/val_font/', '../z_using_files/imgs/val_images/', char2img_list)
-    # process_fonts('../z_using_files/train_font/', '../z_using_files/imgs/train_images/', char2img_list)
-    process_fonts('../z_using_files/content_font/', '../z_using_files/imgs/content_images/', char2img_list)
+    """
+    conda activate VQFont
+    cd datasets
+    python font2image.py --type 1
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--type", default='1', help="type font imgs")
+    args = parser.parse_args()
+    if args.type == '1':
+        print('val_font')
+        process_fonts('../z_using_files/val_font/', '../z_using_files/imgs/val_images/', char2img_list)
+    elif args.type == '2':
+        print('train_font')
+        process_fonts('../z_using_files/train_font/', '../z_using_files/imgs/train_images/', char2img_list)
+    else:
+        print('content_font')
+        process_fonts('../z_using_files/content_font/', '../z_using_files/imgs/content_images/', char2img_list)
