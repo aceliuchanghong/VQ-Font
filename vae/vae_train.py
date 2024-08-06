@@ -37,19 +37,20 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
 
     # 初始化模型
     model = Model(num_embeddings, embedding_dim, commitment_cost, decay).to(device)
-    # 加载模型
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, capturable=True)
+
+    # 加载模型和优化器状态
     if model_path is not None:
-        model.load_state_dict(torch.load(model_path))
-        logger.info(f"Loaded model from {model_path}")
+        checkpoint = torch.load(model_path)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        logger.info(f"Loaded model and optimizer from {model_path}")
     else:
         model.apply(weights_init("xavier"))
 
     # multi-GPU support
     if torch.cuda.device_count() > 1:
         model = torch.nn.DataParallel(model)
-
-    # 优化器
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate, capturable=True)
 
     logger.info("Training started")
     model.train()
@@ -83,11 +84,11 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
             logger.info(f'perplexity: {np.mean(train_res_perplexity[-1000:]):.3f}')
             logger.info(f'vq_loss: {np.mean(train_vq_loss[-1000:]):.3f}')
             print("")
+
         if (i + 1) % 1000 == 0:
-            torch.save(model.module if hasattr(model, 'module') else model,
-                       f'../weight/VQ-VAE_chn_step_{i + 1}.pth')  # 保存整个模型
-            torch.save(model.module.state_dict() if hasattr(model, 'module') else model.state_dict(),
-                       f'../weight/VQ-VAE_Params_chn_step_{i + 1}.pth')  # 保存模型参数
+            save_checkpoint(model, optimizer, f'../weight/VQ-VAE_chn_step_{i + 1}.pth')
+
+    save_checkpoint(model, optimizer, '../weight/VQ-VAE_chn_.pth')
 
     # 验证部分
     logger.info('Validation started')
@@ -111,9 +112,13 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
     save_image(make_grid((org + 0.5).cpu().data), '../z_using_files/imgs/00.png')
     save_image(make_grid((recon_out + 0.5).cpu().data), '../z_using_files/imgs/01.png')
 
-    torch.save(model.module if hasattr(model, 'module') else model, '../weight/VQ-VAE_chn_.pth')  # Save entire model
-    torch.save(model.module.state_dict() if hasattr(model, 'module') else model.state_dict(),
-               '../weight/VQ-VAE_Params_chn_.pth')  # Save model parameters
+
+def save_checkpoint(model, optimizer, filepath):
+    state = {
+        'model_state_dict': model.module.state_dict() if hasattr(model, 'module') else model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict()
+    }
+    torch.save(state, filepath)
 
 
 def save_image(img, filepath):
@@ -125,11 +130,9 @@ def save_image(img, filepath):
 def main():
     train_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_train/'
     val_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_val/'
-    model_path = '../weight/VQ-VAE_Params_chn_step_10000.pth'
-    train_model(train_imgs_path, val_imgs_path, model_path=model_path,
-                num_training_updates=10000, batch_size=1536)
+    model_path = '../weight/VQ-VAE_chn_.pth'
+    train_model(train_imgs_path, val_imgs_path, num_training_updates=200, batch_size=1536, model_path=model_path)
 
 
 if __name__ == "__main__":
-    # python vae_train.py
     main()

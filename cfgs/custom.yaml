@@ -1,7 +1,7 @@
 use_half: False
 use_ddp: Flase
 
-vae_pth: ./weight/VQ-VAE_Parms_chn_.pth # path/to/save/pre-trained model
+vae_pth: ./weight/VQ-VAE_Params_chn_.pth # path/to/save/pre-trained model
 sim_path: ./weight/all_char_similarity_unicode.json # path/to/save/content_similarity
 work_dir: ./z_using_files/lmdb_path/ # workspace
 data_path: ./z_using_files/lmdb_path/lmdb/  # path/to/saved/lmdb
