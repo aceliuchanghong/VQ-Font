@@ -3,7 +3,7 @@ import shutil
 import random
 
 
-def split_folders(input_directory, train_directory, val_directory, train_count=3000, val_count=500):
+def split_content_folders(input_directory, train_directory, val_directory, train_count=3000, val_count=500):
     if not os.path.exists(train_directory):
         os.makedirs(train_directory)
     if not os.path.exists(val_directory):
@@ -39,4 +39,4 @@ if __name__ == '__main__':
     train_directory = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_train'
     val_directory = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_val'
 
-    split_folders(input_directory, train_directory, val_directory)
+    split_content_folders(input_directory, train_directory, val_directory)

@@ -39,6 +39,9 @@ pip freeze > requirements.txt
    by ```'characters + .png'```, such as ```‘阿.png’```.
    Organize directories structure as below, and ```train_3000.png``` means draw the image from
    train_unis: ["4E00", "4E01", ...].
+   在vae的训练过程中,其实是训练emb模型,所以只需要content_font的字体图片即可
+   vae_train.py需要分为3000:500的
+   然后vae_emb.py需要全部的3500图片
 
 > Font Directory  
 > |--| content  

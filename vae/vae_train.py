@@ -2,7 +2,6 @@ import sys
 
 sys.path.append("../")
 from torchvision.utils import make_grid
-
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -21,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
                 embedding_dim=256, num_embeddings=100, commitment_cost=0.25,
-                decay=0, learning_rate=2e-4, batch_size=512):
+                decay=0, learning_rate=2e-4, batch_size=512, model_path=None):
     # 确定设备
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -38,7 +37,16 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
 
     # 初始化模型
     model = Model(num_embeddings, embedding_dim, commitment_cost, decay).to(device)
-    model.apply(weights_init("xavier"))
+    # 加载模型
+    if model_path is not None:
+        model.load_state_dict(torch.load(model_path))
+        logger.info(f"Loaded model from {model_path}")
+    else:
+        model.apply(weights_init("xavier"))
+
+    # multi-GPU support
+    if torch.cuda.device_count() > 1:
+        model = torch.nn.DataParallel(model)
 
     # 优化器
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
@@ -60,14 +68,14 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
 
         vq_loss, data_recon, perplexity = model(data)
         recon_error = F.mse_loss(data_recon, data) / train_data_variance
-        loss = recon_error + vq_loss
+        loss = recon_error.mean() + vq_loss.mean()  # 计算平均损失
         loss.backward()
 
         optimizer.step()
 
-        train_res_recon_error.append(recon_error.item())
-        train_res_perplexity.append(perplexity.item())
-        train_vq_loss.append(vq_loss.item())
+        train_res_recon_error.append(recon_error.mean().item())
+        train_res_perplexity.append(perplexity.mean().item())
+        train_vq_loss.append(vq_loss.mean().item())
 
         if (i + 1) % 100 == 0:
             logger.info(f'{i + 1} iterations')
@@ -75,6 +83,11 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
             logger.info(f'perplexity: {np.mean(train_res_perplexity[-1000:]):.3f}')
             logger.info(f'vq_loss: {np.mean(train_vq_loss[-1000:]):.3f}')
             print("")
+        if (i + 1) % 1000 == 0:
+            torch.save(model.module if hasattr(model, 'module') else model,
+                       f'../weight/VQ-VAE_chn_step_{i + 1}.pth')  # 保存整个模型
+            torch.save(model.module.state_dict() if hasattr(model, 'module') else model.state_dict(),
+                       f'../weight/VQ-VAE_Params_chn_step_{i + 1}.pth')  # 保存模型参数
 
     # 验证部分
     logger.info('Validation started')
@@ -86,29 +99,37 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
         model.eval()
         valid_originals = next(iter(validation_loader))
         valid_originals = valid_originals.to(device)
-        vq_output_eval = model._encoder(valid_originals)
-        _, valid_quantize, _, _ = model._vq_vae(vq_output_eval)
-        valid_reconstructions = model._decoder(valid_quantize)
+        vq_output_eval = model.module._encoder(valid_originals) if hasattr(model, 'module') else model._encoder(
+            valid_originals)
+        _, valid_quantize, _, _ = model.module._vq_vae(vq_output_eval) if hasattr(model, 'module') else model._vq_vae(
+            vq_output_eval)
+        valid_reconstructions = model.module._decoder(valid_quantize) if hasattr(model, 'module') else model._decoder(
+            valid_quantize)
         return valid_originals, valid_reconstructions
 
     org, recon_out = validate_model(model, validation_loader)
     save_image(make_grid((org + 0.5).cpu().data), '../z_using_files/imgs/00.png')
     save_image(make_grid((recon_out + 0.5).cpu().data), '../z_using_files/imgs/01.png')
 
-    torch.save(model, '../weight/VQ-VAE_chn_.pth')  # 保存整个模型
-    torch.save(model.state_dict(), '../weight/VQ-VAE_Parms_chn_.pth')  # 保存模型参数
+    torch.save(model.module if hasattr(model, 'module') else model, '../weight/VQ-VAE_chn_.pth')  # Save entire model
+    torch.save(model.module.state_dict() if hasattr(model, 'module') else model.state_dict(),
+               '../weight/VQ-VAE_Params_chn_.pth')  # Save model parameters
 
 
 def save_image(img, filepath):
     npimg = img.numpy()
+    npimg = np.clip(npimg, 0, 1)  # Ensure values are in the 0..1 range
     plt.imsave(filepath, np.transpose(npimg, (1, 2, 0)))
 
 
 def main():
     train_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_train/'
     val_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_val/'
-    train_model(train_imgs_path, val_imgs_path)
+    model_path = '../weight/VQ-VAE_Params_chn_step_10000.pth'
+    train_model(train_imgs_path, val_imgs_path, model_path=model_path,
+                num_training_updates=10000, batch_size=128)
 
 
 if __name__ == "__main__":
+    # python vae_train.py
     main()

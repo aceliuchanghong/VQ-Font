@@ -1,1 +1,1 @@
-python3 train.py test cfgs/custom.yaml
+python3 train.py lmdb_path cfgs/custom.yaml

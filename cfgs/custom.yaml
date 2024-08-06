@@ -3,11 +3,11 @@ use_ddp: Flase
 
 vae_pth: ./weight/VQ-VAE_Parms_chn_.pth # path/to/save/pre-trained model
 sim_path: ./weight/all_char_similarity_unicode.json # path/to/save/content_similarity
-work_dir: ./results/your_task_name/ # workspace
-data_path: ./results/your_task_name/lmdb/  # path/to/saved/lmdb
-data_meta: ./results/your_task_name/meta/train.json  # meta/train.json
+work_dir: ./z_using_files/lmdb_path/ # workspace
+data_path: ./z_using_files/lmdb_path/lmdb/  # path/to/saved/lmdb
+data_meta: ./z_using_files/lmdb_path/meta/train.json  # meta/train.json
 all_content_json: ./meta/trian_val_all_characters.json
-content_font: "ADOBESONGSTD-LIGHT" # content font
+content_font: "LXGWWenKaiGB-Light" # content font
 
 num_embeddings: 100
 vae_batch_size: 256
@@ -19,7 +19,7 @@ num_heads: 8
 kshot: 3
 num_positive_samples: 2
 
-batch_size: 8 #32
+batch_size: 128 #512
 n_workers: 15
 iter: 500000 # 500000
 g_lr: 2e-4

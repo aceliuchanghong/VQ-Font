@@ -1,5 +1,6 @@
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
 sys.path.append("../")
 import json
@@ -14,20 +15,6 @@ from vae.vae_model import Model
 # 设置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# 模型参数
-embedding_dim = 256
-num_embeddings = 100
-commitment_cost = 0.25
-decay = 0
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# 加载模型
-model = Model(num_embeddings, embedding_dim, commitment_cost, decay).to(device)
-models = torch.load('../weight/VQ-VAE_chn_.pth')
-encoder = models._encoder
-encoder.requires_grad = False
-encoder.to("cpu")
 
 
 # 自定义数据集
@@ -62,13 +49,25 @@ def CosineSimilarity(tensor_1, tensor_2):
     return (normalized_tensor_1 * normalized_tensor_2).sum(dim=-1)
 
 
-def main(train_imgs_path, batch_size, output_path):
+def calculate_similarity(i, img_name, vector):
+    logger.info(f'Running the {i + 1} word')
+    char_i = hex(ord(img_name[i][-5]))[2:].upper()
+    dict_sim_i = {char_i: {}}
+    for j in range(len(img_name)):
+        char_j = hex(ord(img_name[j][-5]))[2:].upper()
+        sim = CosineSimilarity(vector[i], vector[j])
+        if i == j:
+            sim = 1.0
+        dict_sim_i[char_i][char_j] = float(sim)
+    return dict_sim_i
+
+
+def main(train_imgs_path, batch_size, output_path, encoder):
     # 数据转换和加载
+    logger.info("开始数据转换和加载")
     tensorize_transform = transforms.Compose([transforms.Resize((128, 128)), transforms.ToTensor()])
     sim_dataset = CombTrain_VQ_VAE_dataset(train_imgs_path, transform=tensorize_transform)
     sim_loader = DataLoader(sim_dataset, batch_size=batch_size, shuffle=False, pin_memory=True)
-
-    similarity = []
 
     for data in sim_loader:
         img_name, img_tensor = data
@@ -76,35 +75,48 @@ def main(train_imgs_path, batch_size, output_path):
         img_tensor = img_tensor.to("cpu")
 
         # 获取内容特征
+        logger.info("提取内容特征")
         content_feature = encoder(img_tensor)
         vector = content_feature.view(content_feature.shape[0], -1)
 
         sim_all = {}
-        for i in range(batch_size):
-            char_i = hex(ord(img_name[i][-5]))[2:].upper()
-            dict_sim_i = {char_i: {}}
-            for j in range(batch_size):
-                char_j = hex(ord(img_name[j][-5]))[2:].upper()
-                sim = CosineSimilarity(vector[i], vector[j])
-                if i == j:
-                    sim = 1.0
-                dict_sim_i[char_i][char_j] = float(sim)
-            sim_all.update(dict_sim_i)
+        with ThreadPoolExecutor() as executor:
+            results = executor.map(lambda i: calculate_similarity(i, img_name, vector), range(batch_size))
+            for result in results:
+                sim_all.update(result)
 
         dict_json = json.dumps(sim_all)
 
         # 保存为.json文件
+        logger.info(f"保存相似度结果到 {output_path}")
         with open(output_path, 'w+') as file:
             file.write(dict_json)
 
     # 读取并打印内容
+    logger.info("读取并打印内容")
     with open(output_path, 'r+') as file:
         content = json.load(file)
     print(content['4E08'])
 
 
 if __name__ == "__main__":
-    train_imgs_path = 'path/to/save/all_content_imgs'  # 图片路径
-    batch_size = 3500  # 批处理大小
+    # 模型参数
+    embedding_dim = 256
+    num_embeddings = 100
+    commitment_cost = 0.25
+    decay = 0
+    device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
+
+    # 加载模型
+    logger.info("加载模型")
+    model = Model(num_embeddings, embedding_dim, commitment_cost, decay).to(device)
+    models = torch.load('../weight/VQ-VAE_chn_.pth')
+    encoder = models._encoder
+    encoder.requires_grad = False
+    encoder.to("cpu")
+
+    batch_size = 3500
+    train_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light/'  # 图片路径
     output_path = '../weight/all_char_similarity_unicode.json'  # 输出文件路径
-    main(train_imgs_path, batch_size, output_path)
+    logger.info("开始主程序")
+    main(train_imgs_path, batch_size, output_path, encoder)
