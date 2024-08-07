@@ -73,7 +73,8 @@ def setup_transforms(cfg):
 
 
 def load_pretrain_vae_model(load_path='path/to/save/pre-train_VQ-VAE', gen=None):
-    vae_state_dict = torch.load(load_path, map_location=torch.device('cuda:0'))
+    vae_state_dict = torch.load(load_path)
+    vae_state_dict = vae_state_dict['model_state_dict']
     component_objects = vae_state_dict["_vq_vae._embedding.weight"]
 
     del_key = []

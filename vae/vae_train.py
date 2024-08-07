@@ -88,7 +88,7 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
         if (i + 1) % 1000 == 0:
             save_checkpoint(model, optimizer, f'../weight/VQ-VAE_chn_step_{i + 1}.pth')
 
-    save_checkpoint(model, optimizer, '../weight/VQ-VAE_chn_.pth')
+    save_checkpoint(model, optimizer, '../weight/VQ-VAE_chn_last.pth')
 
     # 验证部分
     logger.info('Validation started')
@@ -130,10 +130,11 @@ def save_image(img, filepath):
 def main():
     train_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_train/'
     val_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_val/'
-    model_path = '../weight/VQ-VAE_chn_.pth'
+    model_path = '../weight/VQ-VAE_chn_best.pth'
     train_model(train_imgs_path, val_imgs_path, num_training_updates=21000, batch_size=1536, model_path=model_path)
 
 
 if __name__ == "__main__":
+    # cd vae
     # python vae_train.py
     main()
