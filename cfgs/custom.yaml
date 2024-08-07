@@ -19,7 +19,7 @@ num_heads: 8
 kshot: 3
 num_positive_samples: 2
 
-batch_size: 128 #512
+batch_size: 64 #512
 n_workers: 15
 iter: 500000 # 500000
 g_lr: 2e-4

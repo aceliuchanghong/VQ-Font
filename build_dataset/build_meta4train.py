@@ -85,6 +85,7 @@ def getMetaDict(font_path_list):
         [dict]: [description]
     """
     meta_dict = dict()
+    # print(font_path_list)
     print("ttf_path_list:", len(font_path_list))
     for font_path in tqdm(font_path_list):
         font_name = os.path.basename(font_path)
@@ -117,7 +118,7 @@ def build_meta4train_lmdb(args):
     font_path_list = []
 
     font_chosen = []
-    print(train_font_dir)
+    # print(train_font_dir)
     for font_name in os.listdir(train_font_dir):
         # print(font_name)
         font_chosen.append(os.path.join(train_font_dir, font_name))
@@ -203,7 +204,7 @@ def build_train_meta(args):
 if __name__ == "__main__":
     """
     conda activate VQFont
-    python build_dataset/build_meta4train.py --saving_dir z_using_files/lmdb_path/  --content_font z_using_files/imgs/content_images --train_font_dir z_using_files/imgs/train_images  --val_font_dir z_using_files/imgs/val_images  --seen_unis_file meta/train_unis.json  --unseen_unis_file meta/val_unis.json    
+python build_dataset/build_meta4train.py --saving_dir z_using_files/lmdb_path/  --content_font z_using_files/imgs/content_images/LXGWWenKaiGB-Light --train_font_dir z_using_files/imgs/train_images  --val_font_dir z_using_files/imgs/val_images  --seen_unis_file meta/train_unis.json  --unseen_unis_file meta/val_unis.json    
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--saving_dir", help="directory where your lmdb file will be saved")

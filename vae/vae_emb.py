@@ -100,6 +100,7 @@ def main(train_imgs_path, batch_size, output_path, encoder):
 
 
 if __name__ == "__main__":
+    # python vae_emb.py
     # 模型参数
     embedding_dim = 256
     num_embeddings = 100

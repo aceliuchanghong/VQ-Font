@@ -93,7 +93,7 @@ def load_pretrain_vae_model(load_path='path/to/save/pre-train_VQ-VAE', gen=None)
 def train(args, cfg, ddp_gpu=-1):
     """
     train
-    :param atgs:
+    :param args:
     :param cfg:
     :param ddp_gpu:
     :return:
@@ -217,4 +217,5 @@ def main():
 
 
 if __name__ == "__main__":
+    # python train.py test cfgs/custom.yaml
     main()
