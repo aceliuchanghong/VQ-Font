@@ -21,6 +21,10 @@ class CombinedTrainer(BaseTrainer):
         """
         train
         """
+        self.gen = self._get_model(self.gen)
+        self.disc = self._get_model(self.disc)
+        self.gen_ema = self._get_model(self.gen_ema)
+
         self.gen.train()
         if self.disc is not None:
             self.disc.train()
@@ -157,8 +161,8 @@ class CombinedTrainer(BaseTrainer):
                 if self.step % self.cfg['val_freq'] == 0:
                     epoch = self.step / len(loader)
                     self.logger.info("Validation at Epoch = {:.3f}".format(epoch))
-                    self.evaluator.cp_validation(self.gen_ema, self.cv_loaders, self.step,
-                                                 bs_component_embeddings, chars_sim_dict)
+                    self.evaluator.cp_validation(self.gen_ema, self.cv_loaders, self.step, bs_component_embeddings,
+                                                 chars_sim_dict)
                     self.save(loss_dic['g_total'], self.cfg['save'], self.cfg.get('save_freq', self.cfg['val_freq']))
 
                 if self.step >= max_step:

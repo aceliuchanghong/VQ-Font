@@ -169,6 +169,12 @@ def train(args, cfg, ddp_gpu=-1):
     else:
         disc = None
 
+    # Wrap models for multi-GPU
+    if torch.cuda.device_count() > 1:
+        logger.info(f"Using {torch.cuda.device_count()} GPUs!")
+        gen = torch.nn.DataParallel(gen)
+        disc = torch.nn.DataParallel(disc)
+
     g_optim = optim.Adam(gen.parameters(), lr=cfg.g_lr, betas=cfg.adam_betas)
     d_optim = optim.Adam(disc.parameters(), lr=cfg.d_lr, betas=cfg.adam_betas)
     gen_scheduler = torch.optim.lr_scheduler.StepLR(g_optim, step_size=cfg['step_size'], gamma=cfg['gamma'])

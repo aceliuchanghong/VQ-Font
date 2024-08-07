@@ -1,8 +1,6 @@
-from pathlib import Path
 import torch
 from torchvision import utils as tv_utils
-import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 
 
 def make_comparable_grid(*batches, nrow):
@@ -13,24 +11,20 @@ def make_comparable_grid(*batches, nrow):
     N = len(batches[0])
 
     grids = []
-    for i in range(0, N, nrow): #nrow=30, N=300
-        rows = [batch[i:i+nrow] for batch in batches]
+    for i in range(0, N, nrow):  # nrow=30, N=300
+        # print(nrow, N)
+        rows = [batch[i:i + nrow] for batch in batches]
         row = torch.cat(rows)
         grid = to_grid(row, 'torch', nrow=nrow)
+        # print(row.shape, nrow)
         grids.append(grid)
 
         C, _H, W = grid.shape
         sep_bar = torch.zeros(C, 10, W)
+        # print(grid.shape, sep_bar.shape)
         grids.append(sep_bar)
     return torch.cat(grids[:-1], dim=1)
 
-def normalize(tensor, eps=1e-5):
-    """ Normalize tensor to [0, 1] """
-    # eps=1e-5 is same as make_grid in torchvision.
-    minv, maxv = tensor.min(), tensor.max()
-    tensor = (tensor - minv) / (maxv - minv + eps)
-
-    return tensor
 
 def to_grid(tensor, to, **kwargs):
     """ Integrated functions of make_grid and save_image
@@ -40,6 +34,16 @@ def to_grid(tensor, to, **kwargs):
     grid = tv_utils.make_grid(tensor, **kwargs, normalize=True)
     if to == 'torch':
         return grid
+
+
+def normalize(tensor, eps=1e-5):
+    """ Normalize tensor to [0, 1] """
+    # eps=1e-5 is same as make_grid in torchvision.
+    minv, maxv = tensor.min(), tensor.max()
+    tensor = (tensor - minv) / (maxv - minv + eps)
+
+    return tensor
+
 
 def save_tensor_to_image(tensor, filepath, scale=None):
     """ Save torch tensor to filepath
@@ -51,6 +55,6 @@ def save_tensor_to_image(tensor, filepath, scale=None):
         ndarr = ndarr.squeeze(-1)
     im = Image.fromarray(ndarr)
     if scale:
-        size = tuple(map(lambda v: int(v*scale), im.size))
+        size = tuple(map(lambda v: int(v * scale), im.size))
         im = im.resize(size, resample=Image.BILINEAR)
     im.save(filepath)

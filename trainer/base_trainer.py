@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import utils
 from pathlib import Path
 from .trainer_utils import *
+
 try:
     from apex import amp
 except ImportError:
@@ -56,6 +57,12 @@ class BaseTrainer:
 
         return models, opts
 
+    def _get_model(self, model):
+        if isinstance(model, torch.nn.DataParallel):
+            # print('is multi gpus')
+            return model.module
+        return model
+
     def clear_losses(self):
         """ Integrate & clear loss json_dict """
         # g losses
@@ -86,8 +93,6 @@ class BaseTrainer:
         component_objects = component_objects.repeat(self.batch_size, 1, 1)  # [B N C]
 
         return component_objects.detach()
-
-
 
     def add_pixel_loss(self, out, target, self_infer):
         """
