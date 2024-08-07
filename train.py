@@ -224,5 +224,5 @@ def main():
 
 
 if __name__ == "__main__":
-    # python train.py test cfgs/custom.yaml
+    # python train.py lmdb_path cfgs/custom.yaml
     main()

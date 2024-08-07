@@ -1,9 +1,4 @@
-from tqdm import tqdm
 import json
-import lmdb
-import random
-from PIL import Image, ImageFont, ImageDraw
-import io
 from glob import glob
 import argparse
 import os
