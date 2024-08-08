@@ -252,8 +252,8 @@ class BaseTrainer:
             save_dic['d_scheduler'] = self.d_scheduler.state_dict()
 
         ckpt_dir = self.cfg['work_dir'] / "checkpoints" / self.cfg['unique_name']
-        step_ckpt_name = "{:06d}-{}.pth".format(self.step, self.cfg['name'])
-        last_ckpt_name = "last.pth"
+        step_ckpt_name = "{:06d}-{}-2.pth".format(self.step, self.cfg['name'])
+        last_ckpt_name = "last-2.pth"
         step_ckpt_path = Path.cwd() / ckpt_dir / step_ckpt_name
         last_ckpt_path = ckpt_dir / last_ckpt_name
 
