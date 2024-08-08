@@ -13,6 +13,10 @@ pip install -r requirements.txt
 pip freeze > requirements.txt
 ```
 
+### 训练字体来源
+
+- https://github.com/aceliuchanghong/free-font
+
 ## Data Preparation
 
 ### Images and Characters

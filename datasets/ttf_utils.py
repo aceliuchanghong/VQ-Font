@@ -63,6 +63,7 @@ def font2image(input_file, output_paths, characters, size):
     input_file_name = input_file.split('/')[-1].split('.')[0]
     # print('mmL:', input_file_name)
     output_path = os.path.join(output_paths, input_file_name)
+    print(output_path)
 
     if not os.path.exists(output_path):
         os.mkdir(output_path)
