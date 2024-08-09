@@ -131,10 +131,11 @@ def main():
     train_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_train/'
     val_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_val/'
     model_path = '../weight/VQ-VAE_chn_best.pth'
-    train_model(train_imgs_path, val_imgs_path, num_training_updates=21000, batch_size=1536, model_path=model_path)
+    train_model(train_imgs_path, val_imgs_path, num_training_updates=40000, batch_size=1536, model_path=model_path)
 
 
 if __name__ == "__main__":
     # cd vae
     # python vae_train.py
+    # nohup python vae_train.py>train.log &
     main()

@@ -23,17 +23,19 @@ def setup_args_and_config():
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("name")
-    parser.add_argument("config_paths", nargs="+", help="path/to/config.yaml")
+    parser.add_argument("name", help="该工程名称")
+    parser.add_argument("config_paths", nargs="+",
+                        help="config_paths 至少需要提供一个路径,eg:python script.py name config1.yaml config2.yaml")
     parser.add_argument("--resume", default=None, help="path/to/saved/.pth")
     parser.add_argument("--use_unique_name", default=False, action="store_true",
                         help="whether to use name with timestamp")
 
+    # args（包含已解析参数的命名空间）和 left_argv（未解析的剩余参数)
     args, left_argv = parser.parse_known_args()
+    # 确保 name 参数不以 .yaml 结尾，避免名称与配置文件混淆
     assert not args.name.endswith(".yaml")
 
-    cfg = Config(*args.config_paths, default="cfgs/defaults.yaml",
-                 colorize_modified_item=True)
+    cfg = Config(*args.config_paths, default="cfgs/defaults.yaml", colorize_modified_item=True)
     cfg.argv_update(left_argv)
 
     cfg.work_dir = Path(cfg.work_dir)
@@ -62,23 +64,34 @@ def setup_transforms(cfg):
     setup_transforms
     """
     size = cfg.input_size
+    # transforms.Resize((size, size))：将输入图像调整为 (size, size) 的尺寸。
+    # 对于图像来说，像素值通常在 [0, 1] 的范围内，因为在应用 transforms.ToTensor() 之后，像素值会被缩放到这个范围
     tensorize_transform = [transforms.Resize((size, size)), transforms.ToTensor()]
     if cfg.dset_aug.normalize:
+        # 这一步将图像的像素值归一化到[-1, 1]的范围内
+        # 归一化后的像素值范围从 [0, 1] 变成了 [-1, 1]。这在是常见的输入格式，特别是在使用 tanh 作为激活函数时，tanh的输出范围就是 [-1, 1]
         tensorize_transform.append(transforms.Normalize([0.5], [0.5]))
+        # 指定输出激活函数为 tanh
         cfg.g_args.dec.out = "tanh"
 
+    # 使用 transforms.Compose 将 tensorize_transform 组合成一个整体的变换操作
     trn_transform = transforms.Compose(tensorize_transform)
     val_transform = transforms.Compose(tensorize_transform)
     return trn_transform, val_transform
 
 
 def load_pretrain_vae_model(load_path='path/to/save/pre-train_VQ-VAE', gen=None):
+    """
+    加载预训练的VAE模型的状态，并将编码器部分的参数加载到给定生成器模型 (gen) 的内容编码器中，同时将部分参数设置为不可训练
+    但是gen没有返回,没起作用
+    """
     vae_state_dict = torch.load(load_path)
     vae_state_dict = vae_state_dict['model_state_dict']
     component_objects = vae_state_dict["_vq_vae._embedding.weight"]
 
     del_key = []
     for key, _ in vae_state_dict.items():
+        # 找到所有与编码器相关的参数
         if "encoder" in key:
             del_key.append(key)
 
@@ -91,15 +104,16 @@ def load_pretrain_vae_model(load_path='path/to/save/pre-train_VQ-VAE', gen=None)
     return component_objects
 
 
-def train(args, cfg, ddp_gpu=-1):
+def train(args, cfg):
     """
+    主要用于训练生成对抗网络（GAN）模型
     train
-    :param args:
-    :param cfg:
-    :param ddp_gpu:
+    :param args: 参数
+    :param cfg: 配置
     :return:
     """
-    torch.cuda.set_device(ddp_gpu)
+    # ddp_gpu的值被设置为-1，这通常表示不使用任何GPU，而是使用CPU进行计算
+    # torch.cuda.set_device(-1)
     logger_path = cfg.work_dir / "logs" / "{}.log".format(cfg.unique_name)
     logger = Logger.get(file_path=logger_path, level="info", colorize=True)
 
@@ -109,7 +123,6 @@ def train(args, cfg, ddp_gpu=-1):
     writer = utils.TBDiskWriter(writer_path, eval_image_path, scale=image_scale)
 
     args_str = dump_args(args)
-    # if is_main_worker(ddp_gpu):
     logger.info("Run Argv:\n> {}".format(" ".join(sys.argv)))
     logger.info("Args:\n{}".format(args_str))
     logger.info("Configs:\n{}".format(cfg.dumps()))
@@ -145,7 +158,7 @@ def train(args, cfg, ddp_gpu=-1):
                                 cfg,
                                 data_meta,
                                 val_transform,
-                                num_workers=0,
+                                num_workers=8,
                                 shuffle=False,
                                 drop_last=True)
 
@@ -225,4 +238,5 @@ def main():
 
 if __name__ == "__main__":
     # python train.py lmdb_path cfgs/custom.yaml
+    # nohup python train.py lmdb_path cfgs/custom.yaml >s_train.log &
     main()

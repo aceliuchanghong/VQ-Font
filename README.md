@@ -16,6 +16,10 @@ pip freeze > requirements.txt
 ### 训练字体来源
 
 - https://github.com/aceliuchanghong/free-font
+```shell
+1.下载字体
+2.字体转图片(font2image_new.py)
+```
 
 ## Data Preparation
 
