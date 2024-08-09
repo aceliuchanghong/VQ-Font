@@ -19,13 +19,16 @@ def resize_images_in_directory(input_directory, output_directory, size):
             img_path = os.path.join(input_directory, filename)
             with Image.open(img_path) as img:
                 img = img.resize((size, size), Image.ANTIALIAS)
-                img.save(os.path.join(output_directory, filename))
+                file = os.path.join(output_directory, filename)
+                print(file)
+                img.save(file)
 
 
 if __name__ == '__main__':
     """
     conda activate VQFont
-    python datasets/pic_resize.py /path/to/input/images /path/to/output/images --size 128
+    python datasets/pic_resize.py ./z_using_files/test_imgs/test1-random ./z_using_files/test_imgs/test1-random --size 128
+    python datasets/pic_resize.py ./z_using_files/test_imgs/test2-handwriting ./z_using_files/test_imgs/test2-handwriting
     """
     parser = argparse.ArgumentParser(description="Resize PNG and JPG images in a directory.")
     parser.add_argument('input_directory', type=str, help="Path to the input directory containing images")
