@@ -76,9 +76,9 @@ class Get_style_components(nn.Module):
         return style_components
 
 
-class ComponentAttentiomModule(nn.Module):
+class ComponentAttentionModule(nn.Module):
     def __init__(self, num_heads=8, num_channels=256):
-        super(ComponentAttentiomModule, self).__init__()
+        super(ComponentAttentionModule, self).__init__()
         self.linears_key = nn.Linear(num_channels, num_channels, bias=False)
         self.linears_value = nn.Linear(num_channels, num_channels, bias=False)
         self.linears_query = nn.Linear(num_channels, num_channels, bias=False)

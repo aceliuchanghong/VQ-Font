@@ -6,18 +6,24 @@ import torch.nn.functional as F
 from model.decoder import dec_builder, Integrator
 from model.content_encoder import content_enc_builder
 from model.references_encoder import comp_enc_builder
-from model.Component_Attention_Module import ComponentAttentiomModule, Get_style_components
+from model.Component_Attention_Module import ComponentAttentionModule, Get_style_components
 from model.memory import Memory
 
 
 class Generator(nn.Module):
     """
-    Generator
+    Generator,涉及内容编码、风格编码、内存模块、解码器等组件
     """
 
     def __init__(self, C_in, C, C_out, cfg, comp_enc, dec, content_enc, integrator_args):
         super().__init__()
         self.num_heads = cfg.num_heads
+        """
+        k-shot，这是在少样本学习（few-shot learning）或零样本学习（zero-shot learning）中常用的术语。
+        具体来说，k-shot 是指模型在训练或测试时，每个类别只有 k 个样本。
+        例如，1-shot 意味着每个类别只有一个样本，5-shot 意味着每个类别有五个样本。
+        k-shot learning 任务通常用来评估模型在数据稀缺情况下的泛化能力。
+        """
         self.kshot = cfg.kshot
         self.component_encoder = comp_enc_builder(C_in, C, **comp_enc)  # 构建部件风格编码器
         self.mem_shape = self.component_encoder.out_shape  # [256, 16, 16]
@@ -26,9 +32,9 @@ class Generator(nn.Module):
         self.Get_style_components = Get_style_components()
         self.Get_style_components_1 = Get_style_components()
         self.Get_style_components_2 = Get_style_components()
-        self.cam = ComponentAttentiomModule()
+        self.cam = ComponentAttentionModule()
 
-        # memory
+        # 用于存储和读取编码后的风格特征
         self.memory = Memory()
 
         self.shot = cfg.kshot
@@ -41,8 +47,8 @@ class Generator(nn.Module):
             C, C_out, **dec
         )
 
+        # 用于融合内容特征和风格特征，以生成最终的图像特征
         self.Integrator = Integrator(C * 8, **integrator_args, C_content=C_content, C_reference=C_reference)
-
         self.Integrator_local = Integrator(C * 8, **integrator_args, C_content=C_content, C_reference=0)
 
     def reset_memory(self):
@@ -54,24 +60,16 @@ class Generator(nn.Module):
     def read_decode(self, target_style_ids, trg_sample_index, content_imgs, learned_components, trg_unis, ref_unis,
                     chars_sim_dict, reset_memory=True, reduction='mean'):
         """
-        decode
-        :param target_style_ids:
-        :param trg_sample_index:
-        :param content_imgs:
-        :param reset_memory:
-        :param reduction:
-        :return:
+        生成图像的主要方法之一。
+        首先从内存中读取参考图像的风格特征，然后通过多个步骤提取和整合风格组件，最后将其与内容特征融合，通过解码器生成最终的图像。
         """
-
-        # print(target_style_ids)
-        # print(trg_sample_index)
 
         reference_feats = self.memory.read_chars(target_style_ids, trg_sample_index, reduction=reduction)
         reference_feats = torch.stack([x for x in reference_feats])  # 参考图片特征[B,3,C,H,W]
 
         # print("reference_feats", reference_feats.shape)
-
         # print("content_imgs",content_imgs.shape)
+
         content_feats = self.content_encoder(content_imgs)  # 目标内容图片[B,C,H,W]
         # print("content_feats", content_feats.shape)
 
@@ -81,9 +79,9 @@ class Generator(nn.Module):
             style_components = self.Get_style_components_2(style_components, reference_feats)
         except Exception as e:
             traceback.print_exc()
+            return
 
         sr_features = self.cam(content_feats, learned_components, style_components)  # 变换后的特征
-        # print(sr_features.shape)
 
         # print("sr_features",sr_features.shape)
         # print("content_feats", content_feats.shape)
@@ -126,6 +124,7 @@ class Generator(nn.Module):
 
     def Get_style_global(self, trg_unis, ref_unis, reference_feats, chars_sim_dict):
         """
+        用于计算参考图像和内容图像之间的全局相似性。它基于输入的字符相似度字典（chars_sim_dict）计算加权平均，以获得全局风格特征。
         计算reference_set经过content_encodr和conten_feature的相似性权重
         reference_content_features [KB C H W]
         content_feature [B C H W]
@@ -207,4 +206,3 @@ class Generator(nn.Module):
         out = self.decoder(all_features)  # 解码器生成图片,decoder只能接受256通道，在送入decoder之前需要将风格特征和内容特征融合后送入
 
         return out, style_components, sr_features
-

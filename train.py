@@ -136,7 +136,7 @@ def train(args, cfg):
     env = load_lmdb(cfg.data_path)  # 载入数据库环境lmdb
     env_get = lambda env, x, y, transform: transform(read_data_from_lmdb(env, f'{x}_{y}')['img'])
     # x传入font_path;y传入字符的Unicode编码
-    data_meta = load_json(cfg.data_meta)  # load train.json
+    data_meta = load_json(cfg.data_meta)
 
     get_trn_loader = get_comb_trn_loader
     get_cv_loaders = get_cv_comb_loaders
@@ -173,6 +173,7 @@ def train(args, cfg):
     logger.info("Load pre-train model...")
     component_objects = load_pretrain_vae_model(cfg.vae_pth, gen)
 
+    # 判断是否需要初始化判别器模型
     if cfg.gan_w > 0.:
         d_kwargs = cfg.get("d_args", {})
         disc = disc_builder(cfg.C, trn_dset.n_fonts, trn_dset.n_unis, **d_kwargs)
@@ -190,7 +191,10 @@ def train(args, cfg):
 
     g_optim = optim.Adam(gen.parameters(), lr=cfg.g_lr, betas=cfg.adam_betas)
     d_optim = optim.Adam(disc.parameters(), lr=cfg.d_lr, betas=cfg.adam_betas)
+
+    # 为生成器模型的优化器设置学习率调度器
     gen_scheduler = torch.optim.lr_scheduler.StepLR(g_optim, step_size=cfg['step_size'], gamma=cfg['gamma'])
+    # 为判别器模型的优化器设置学习率调度器
     dis_scheduler = torch.optim.lr_scheduler.StepLR(d_optim, step_size=cfg['step_size'], gamma=cfg['gamma']) \
         if disc is not None else None
 
@@ -208,18 +212,18 @@ def train(args, cfg):
         else:
             pass
 
-    envaluator = Evaluator(env,
-                           env_get,
-                           cfg,
-                           logger,
-                           writer,
-                           cfg.batch_size,
-                           val_transform,
-                           content_font,
-                           use_half=cfg.use_half)
+    evaluator = Evaluator(env,
+                          env_get,
+                          cfg,
+                          logger,
+                          writer,
+                          cfg.batch_size,
+                          val_transform,
+                          content_font,
+                          use_half=cfg.use_half)
 
     trainer = Trainer(gen, disc, g_optim, d_optim, gen_scheduler, dis_scheduler,
-                      logger, envaluator, cv_loaders, cfg)
+                      logger, evaluator, cv_loaders, cfg)
 
     with open(cfg.sim_path, 'r+') as file:
         chars_sim = file.read()

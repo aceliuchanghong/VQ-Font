@@ -46,12 +46,14 @@ def read_data_from_lmdb(env, lmdb_key):
 def deserialize_data(data):
     """
     deserialize_data
+    反序列化数据，将输入的二进制数据转换为图像对象并返回
     """
     if data is None:
         return None
 
     buf = io.BytesIO()
     buf.write(data)
+    # 使用 seek(0) 将文件指针移到开头，以便读取数据
     buf.seek(0)
     img = Image.open(buf)
 

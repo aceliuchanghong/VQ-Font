@@ -16,6 +16,7 @@ pip freeze > requirements.txt
 ### 训练字体来源
 
 - https://github.com/aceliuchanghong/free-font
+
 ```shell
 1.下载字体
 2.字体转图片(font2image_new.py)
@@ -48,8 +49,9 @@ pip freeze > requirements.txt
    Organize directories structure as below, and ```train_3000.png``` means draw the image from
    train_unis: ["4E00", "4E01", ...].
    在vae的训练过程中,其实是训练emb模型,所以只需要content_font的字体图片即可
-   vae_train.py需要分为3000:500的
+   其中vae_train.py需要分为3000:500的
    然后vae_emb.py需要全部的3500图片
+   第二阶段few-shot的训练才需要需要上面收集的所有字体,转为图片,分为content+训练集和测试集即可
 
 > Font Directory  
 > |--| content  
@@ -135,3 +137,39 @@ Modify the configuration in the file ```./cfgs/custom.yaml```
   --img_path \path\to\test_imgs \
   --saving_root ./infer_res
   ```
+
+## Explain
+
+1. 图片含义:第一行参考字符 第二行GT 第三行模型生成字符
+
+![0022000-comparable_ufuu_.png](z_using_files/training_log_pics/0022000-comparable_ufuu_.png)
+
+2. 论文里面的FID、SSIM等指标是怎么计算的?
+
+```
+FID:：参考论文-Gans trained by a two time-scale update rule converge to a nash equilibrium. In NeurIPS, 2017.
+LPIPS：参考论文-The unreasonable effectiveness of deep features as a perceptual metric. In CVPR, 2018.
+```
+
+3. VQ-VAE时候,数据norm到[-0.5, 0.5],但是在阶段2, 喂给encoder的图片数据normalized [-1, 1].是否有问题?
+
+```text
+TODO:之后再看
+```
+
+4. 输出的png中的sfsu, sfuu, ufsu, ufuu分别是什么含义呢?
+
+```text
+SFSU等表示了不同字体和字符的组合情况（风格和字符都有训练集和测试集） (seen font seen unicode)
+sfsu # 见过的字符见过的字体
+sfuu # 没有见过的字符见过字体
+ufsu # 见过的字符没见过的字体
+ufuu_ # 没有见过的字符和字体
+```
+
+5. load_pretrain_vae_model函数似乎对于gen没有任何返回值,那么输入的gen就成为摆设了,是不是代码写得有问题?
+
+```text
+TODO:之后再看
+```
+
