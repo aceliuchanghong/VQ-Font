@@ -57,6 +57,7 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
     train_res_recon_error = []
     train_res_perplexity = []
     train_vq_loss = []
+    steps_record = []
 
     # 训练循环
     for i in range(num_training_updates):
@@ -77,18 +78,30 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
         train_res_recon_error.append(recon_error.mean().item())
         train_res_perplexity.append(perplexity.mean().item())
         train_vq_loss.append(vq_loss.mean().item())
+        steps_record.append(i + 1)
 
         if (i + 1) % 100 == 0:
             logger.info(f'{i + 1} iterations')
-            logger.info(f'recon_error: {np.mean(train_res_recon_error[-1000:]):.3f}')
-            logger.info(f'perplexity: {np.mean(train_res_perplexity[-1000:]):.3f}')
-            logger.info(f'vq_loss: {np.mean(train_vq_loss[-1000:]):.3f}')
+            logger.info(f'recon_error: {np.mean(train_res_recon_error[-100:]):.3f}')
+            logger.info(f'perplexity: {np.mean(train_res_perplexity[-100:]):.3f}')
+            logger.info(f'vq_loss: {np.mean(train_vq_loss[-100:]):.3f}')
             print("")
 
-        if (i + 1) % 1000 == 0:
+        if (i + 1) % 500 == 0:
             save_checkpoint(model, optimizer, f'../weight/VQ-VAE_chn_step_{i + 1}.pth')
 
     save_checkpoint(model, optimizer, '../weight/VQ-VAE_chn_last.pth')
+    # 创建一个DataFrame，将损失值存储进去
+    data = {
+        'step': steps_record,
+        'recon_error': train_res_recon_error,
+        'perplexity': train_res_perplexity,
+        'vq_loss': train_vq_loss
+    }
+    import pandas as pd
+    df = pd.DataFrame(data)
+    # 将DataFrame存储到Excel文件中
+    df.to_csv('../weight/training_loss_values.csv', index=False)
 
     # 验证部分
     logger.info('Validation started')
@@ -130,8 +143,9 @@ def save_image(img, filepath):
 def main():
     train_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_train/'
     val_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_val/'
-    model_path = '../weight/VQ-VAE_chn_best.pth'
-    train_model(train_imgs_path, val_imgs_path, num_training_updates=40000, batch_size=1536, model_path=model_path)
+    # model_path = '../weight/VQ-VAE_chn_best.pth'
+    model_path = None
+    train_model(train_imgs_path, val_imgs_path, num_training_updates=26000, batch_size=1536, model_path=model_path)
 
 
 if __name__ == "__main__":

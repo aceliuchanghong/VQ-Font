@@ -176,6 +176,25 @@ class CombinedTrainer(BaseTrainer):
         self.logger.info("Iteration finished.")
 
     def log(self, losses, discs, stats):
+        """
+        ...
+        Step   79720: L1  0.3203   Contrastive  0.5544  D   2.921  G   1.902  B_stl   2.0  B_trg   2.0
+        ...
+        Step   79870: L1  0.3175   Contrastive  0.4485  D   2.905  G   1.982  B_stl   2.0  B_trg   2.0
+        ...
+        L1 loss 又称为“绝对误差损失”（Mean Absolute Error, MAE）值越小意味着模型生成的字体与目标字体在像素级别上越相似，模型的生成效果越好
+        计算方式是预测值与真实值之间的绝对差值之和
+        Contrastive：表示对比损失（Contrastive Loss）。这个值越小越好。对比损失越小，表示模型在区分不同类别样本与聚合相同类别样本方面做得越好
+        在模型训练中，对比损失用于最大化不同类别样本之间的距离，最小化相同类别样本之间的距离，增强模型对不同类别特征的区分能力
+        D：表示判别器损失（Discriminator Loss）。判别器损失一般也是越小越好。D值越小，表示判别器在区分真实与生成数据方面表现得越好
+        在生成对抗网络（GAN）中，判别器的任务是区分真实数据和生成数据，D 反映了判别器在这方面的表现。
+        G：表示生成器损失（Generator Loss）。生成器损失通常也是越小越好。G值越小，表示生成器能够更好地生成逼真的数据，让判别器更难以区分真假
+        在GAN中，生成器的任务是生成看起来与真实数据相似的数据，G 反映了生成器在迷惑判别器方面的效果
+        B_stl：表示风格差异（Style Bias）。 风格差异越小越好。B_stl越小，表示生成的字体与目标风格之间的差异越小，风格迁移效果越好
+        它反映了生成的字体与目标风格之间的差异，通常是衡量生成结果与目标风格一致性的一个指标。
+        B_trg：表示目标风格偏差（Target Bias）。目标风格偏差越小越好。B_trg值越小，表示生成的字体样式更接近目标风格，同时偏离源风格更少
+        这个值可能反映了生成的字体样式在逼近目标风格时与源字体风格之间的偏离程度。
+        """
         self.logger.info(
             "  Step {step:7d}: L1 {L.pixel.avg:7.4f}   Contrastive {L.contrastive.avg:7.4f}"
             "  D {L.disc.avg:7.3f}  G {L.gen.avg:7.3f}"
