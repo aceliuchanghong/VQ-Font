@@ -178,9 +178,11 @@ class CombinedTrainer(BaseTrainer):
     def log(self, losses, discs, stats):
         """
         ...
-        Step   79720: L1  0.3203   Contrastive  0.5544  D   2.921  G   1.902  B_stl   2.0  B_trg   2.0
-        ...
-        Step   79870: L1  0.3175   Contrastive  0.4485  D   2.905  G   1.982  B_stl   2.0  B_trg   2.0
+        Step      90: L1  0.5653   Contrastive 12.1395  D   3.564  G   1.065  B_stl   2.0  B_trg   2.0
+        Step     100: L1  0.5561   Contrastive 11.5012  D   3.543  G   1.041  B_stl   2.0  B_trg   2.0
+        Step     110: L1  0.5178   Contrastive 11.3973  D   3.532  G   1.077  B_stl   2.0  B_trg   2.0
+        Step     120: L1  0.5150   Contrastive 11.2907  D   3.522  G   1.072  B_stl   2.0  B_trg   2.0
+        Step     130: L1  0.5060   Contrastive 10.5871  D   3.525  G   1.088  B_stl   2.0  B_trg   2.0
         ...
         L1 loss 又称为“绝对误差损失”（Mean Absolute Error, MAE）值越小意味着模型生成的字体与目标字体在像素级别上越相似，模型的生成效果越好
         计算方式是预测值与真实值之间的绝对差值之和
