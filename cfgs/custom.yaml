@@ -19,7 +19,7 @@ num_heads: 8
 kshot: 3
 num_positive_samples: 2
 
-batch_size: 32 #512
+batch_size: 64 #512
 n_workers: 15
 iter: 800000 # 500000
 g_lr: 2e-4
@@ -33,6 +33,6 @@ cv_n_unis: 20 # 30
 cv_n_fonts: 9 # 10
 
 print_freq: 10
-val_freq: 1000
-save_freq: 1000
+val_freq: 500
+save_freq: 500
 tb_freq: 2000

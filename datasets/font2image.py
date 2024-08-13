@@ -33,17 +33,12 @@ if __name__ == '__main__':
     """
     conda activate VQFont
     cd datasets
-    python font2image.py --type 1
+    python font2image.py --font_in /mnt/data/llch/free-font/font/new_basic/content --image_out ../z_using_files/imgs/content_images
+    python font2image.py --font_in /mnt/data/llch/free-font/font/new_basic/train --image_out ../z_using_files/imgs/train_images
+    python font2image.py --font_in /mnt/data/llch/free-font/font/new_basic/val --image_out ../z_using_files/imgs/val_images
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type", default='1', help="type font imgs")
+    parser.add_argument("--font_in", default='../z_using_files/val_font/', help="font path")
+    parser.add_argument("--image_out", default='../z_using_files/imgs/val_images/', help="image out path")
     args = parser.parse_args()
-    if args.type == '1':
-        print('val_font')
-        process_fonts('../z_using_files/val_font/', '../z_using_files/imgs/val_images/', char2img_list)
-    elif args.type == '2':
-        print('train_font')
-        process_fonts('../z_using_files/train_font/', '../z_using_files/imgs/train_images/', char2img_list)
-    else:
-        print('content_font')
-        process_fonts('../z_using_files/content_font/', '../z_using_files/imgs/content_images/', char2img_list)
+    process_fonts(args.font_in, args.image_out, char2img_list)

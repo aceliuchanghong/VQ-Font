@@ -106,7 +106,7 @@ if __name__ == "__main__":
     embedding_dim = 256
     num_embeddings = 100
     commitment_cost = 0.25
-    decay = 0
+    decay = 0.999
     device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
 
     # 加载模型

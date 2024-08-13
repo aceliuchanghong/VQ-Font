@@ -20,7 +20,7 @@ def valid_model(val_imgs_path,
                 embedding_dim=256,
                 num_embeddings=100,
                 commitment_cost=0.25,
-                decay=0,
+                decay=0.0,
                 model_path=None):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     pic_name = 'best'
@@ -70,4 +70,4 @@ if __name__ == '__main__':
     model_files = glob.glob(os.path.join(model_path_base, 'VQ-VAE_chn_step_*.pth'))
     for model_path in model_files:
         print(model_path)
-        valid_model(val_imgs_path, model_path=model_path)
+        valid_model(val_imgs_path, model_path=model_path, decay=0.999)
