@@ -1,6 +1,5 @@
 import sys
 
-# sys.path.append("/mnt/data/llch/VQ-Font/")  # the absolute path to the code
 sys.path.append("../")
 import torch
 import torch.nn as nn
@@ -127,12 +126,13 @@ class VectorQuantizerEMA(nn.Module):
 
 
 class Model(nn.Module):
-    def __init__(self, num_embeddings, embedding_dim, commitment_cost, decay=0):
+    def __init__(self, num_embeddings, embedding_dim, commitment_cost, decay=0.0):
         super(Model, self).__init__()
 
         self._encoder = content_enc_builder(1, 32, 256)
 
         if decay > 0.0:
+            # decay是指数移动平均（EMA）的衰减因子
             self._vq_vae = VectorQuantizerEMA(num_embeddings, embedding_dim,
                                               commitment_cost, decay)
         else:
@@ -144,7 +144,19 @@ class Model(nn.Module):
         z = self._encoder(x)  # [B 256 16 16]
         loss, quantized, perplexity, _ = self._vq_vae(z)
         x_recon = self._decoder(quantized)
-
+        """
+        loss:量化过程中的损失值，它包括两个部分：编码空间的均方误差（e_latent_loss）和解码空间的均方误差（q_latent_loss），
+        同时还有一个由commitment_cost控制的权重参数。这是模型的总损失值
+        
+        quantized:量化后的特征图（feature map），即输入特征图经过量化操作后的输出。这个量化操作是通过查找表（embedding table）实现的
+        
+        x_recon:经过编码器提取特征、量化器量化特征、再通过解码器还原后的输出。它与原始输入x相比，应该是一个尽可能接近的重建结果。
+        这个重建结果通常用于计算重建误差,是模型对输入数据的重建版本
+        
+        perplexity:perplexity 是困惑度，衡量编码分布的多样性。它计算了平均编码分布的熵。
+        理想情况下，perplexity 的值应接近于模型的嵌入向量数量，表示模型有效地使用了所有嵌入向量
+        perplexity 越接近于嵌入向量数量越好。太低表示模型没有充分利用嵌入向量，太高则可能意味着模型在特定嵌入上过度集中
+        """
         return loss, x_recon, perplexity
 
 
@@ -159,6 +171,7 @@ class CombTrain_VQ_VAE_dataset(Dataset):
         self.imgs = self.read_file(self.img_path)
         # img = Image.open(self.imgs[0])
         # img = self.transform(img)
+        # torch.Size([1, 128, 128])
         # print(img.shape)
 
     def read_file(self, path):
@@ -170,7 +183,7 @@ class CombTrain_VQ_VAE_dataset(Dataset):
 
     def __getitem__(self, index):
         img_name = self.imgs[index]
-        # print(img_name[-5:-4])
+        # print(img_name[-5:-4])  # 一..输出文字
         img = Image.open(img_name)
         if self.transform is not None:
             img = self.transform(img)  # Tensor [C H W] [1 128 128]

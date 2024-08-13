@@ -25,15 +25,20 @@ def dispatcher(dispatch_fn):
             key = 'none'
 
         return dispatch_fn(key, *args)
+
     return decorated
 
 
 @dispatcher
 def norm_dispatch(norm):
     return {
+        # 不改变输入数据，直接输出 常用于保持模型结构的一致性，在需要用到占位符或者测试时比较有用
         'none': nn.Identity,
-        'in': partial(nn.InstanceNorm2d, affine=False),  # false as default
-        'bn': nn.BatchNorm2d,
+        # nn.InstanceNorm2d 是一种归一化层，它对每个输入样本的每个通道独立地进行归一化处理
+        # affine：如果设置为 True，该层将具有可学习的缩放和平移参数。如果设置为 False，则直接进行归一化而不进行缩放和平移
+        # InstanceNorm2d 在图像生成任务中尤其常见，如风格迁移（Style Transfer）和生成对抗网络（GANs）。与批归一化不同，它在处理单张图片时表现更好，因为它不会受到批量大小的影响，也不依赖其他样本的分布。
+        'in': partial(nn.InstanceNorm2d, affine=False),
+        'bn': nn.BatchNorm2d,  # nn.BatchNorm2d 是PyTorch中的批归一化层，广泛用于加速神经网络训练并稳定其训练过程
     }[norm.lower()]
 
 
@@ -66,9 +71,10 @@ def pad_dispatch(pad_type):
 
 class ConvBlock(nn.Module):
     """ pre-active conv block """
+
     def __init__(self, C_in, C_out, kernel_size=3, stride=1, padding=1, norm='none',
                  activ='relu', bias=True, upsample=False, downsample=False, w_norm='none',
-                 pad_type='zero', dropout=0., size=None):
+                 pad_type='zero', dropout=0.0, size=None):
         # 1x1 conv assertion
         if kernel_size == 1:
             assert padding == 0
@@ -106,6 +112,7 @@ class ConvBlock(nn.Module):
 
 class ResBlock(nn.Module):
     """ Pre-activate ResBlock with spectral normalization """
+
     def __init__(self, C_in, C_out, kernel_size=3, padding=1, upsample=False, downsample=False,
                  norm='none', w_norm='none', activ='relu', pad_type='zero', dropout=0.,
                  scale_var=False):

@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
                 embedding_dim=256, num_embeddings=100, commitment_cost=0.25,
-                decay=0, learning_rate=2e-4, batch_size=512, model_path=None):
+                decay=0.0, learning_rate=2e-4, batch_size=512, model_path=None):
     # 确定设备
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -101,7 +101,7 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
     import pandas as pd
     df = pd.DataFrame(data)
     # 将DataFrame存储到Excel文件中
-    df.to_csv('../weight/training_loss_values.csv', index=False)
+    df.to_csv(f'../weight/training_loss_values_{num_training_updates}.csv', index=False)
 
     # 验证部分
     logger.info('Validation started')
@@ -145,7 +145,14 @@ def main():
     val_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_val/'
     # model_path = '../weight/VQ-VAE_chn_best.pth'
     model_path = None
-    train_model(train_imgs_path, val_imgs_path, num_training_updates=26000, batch_size=1536, model_path=model_path)
+    train_model(
+        train_imgs_path,
+        val_imgs_path,
+        num_training_updates=26000,
+        batch_size=1536,
+        model_path=model_path,
+        decay=0.999
+    )
 
 
 if __name__ == "__main__":
