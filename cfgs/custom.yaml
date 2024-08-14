@@ -19,20 +19,22 @@ num_heads: 8
 kshot: 3
 num_positive_samples: 2
 
-batch_size: 64 #512
+batch_size: 16 #512
 n_workers: 15
 iter: 800000 # 500000
 g_lr: 2e-4
 d_lr: 4e-4
-step_size: 10000
+step_size: 1000
 gamma: 0.95
+# gamma: 0.1
 overwrite: False
-adam_betas: [0.0, 0.9]
+# adam_betas: [0.0, 0.9]
+adam_betas: [0.5, 0.999]
 
 cv_n_unis: 20 # 30
 cv_n_fonts: 9 # 10
 
 print_freq: 10
-val_freq: 500
-save_freq: 500
+val_freq: 200
+save_freq: 200
 tb_freq: 2000

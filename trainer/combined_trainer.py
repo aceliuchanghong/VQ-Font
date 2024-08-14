@@ -2,7 +2,7 @@ from .base_trainer import BaseTrainer
 import utils
 from datasets import cyclize
 import torch
-
+import pandas as pd
 torch.autograd.set_detect_anomaly = True
 
 
@@ -15,6 +15,9 @@ class CombinedTrainer(BaseTrainer):
                  logger, evaluator, cv_loaders, cfg):  # cls_char
         super().__init__(gen, disc, g_optim, d_optim, g_scheduler, d_scheduler,
                          logger, evaluator, cv_loaders, cfg)
+        # 初始化一个空的 DataFrame 来存储所有步骤的记录
+        self.loss_records_df = pd.DataFrame(columns=['step', 'pixel_avg', 'contrastive_avg', 'disc_avg', 'gen_avg'])
+        self.excel_file_path = 'loss_records.xlsx'
 
     def train(self, loader, st_step=1, max_step=100000, component_embeddings=None, chars_sim_dict=None):
         # loader中存放了一个batch的数据
@@ -150,7 +153,14 @@ class CombinedTrainer(BaseTrainer):
                     self.baseplot(losses, discs, stats)
 
                 if self.step % self.cfg['print_freq'] == 0:
-                    self.log(losses, discs, stats)
+                    loss_record = self.log(losses, discs, stats)
+                    # 将当前的 loss_record 转换为 DataFrame
+                    record_df = pd.DataFrame([loss_record])
+                    # 将记录添加到 loss_records_df 中
+                    self.loss_records_df = pd.concat([self.loss_records_df, record_df], ignore_index=True)
+                    # 将 loss_records_df 写入到 Excel 文件中
+                    self.loss_records_df.to_excel(self.excel_file_path, index=False)
+
                     self.logger.debug("GPU Memory usage: max mem_alloc = %.1fM / %.1fM",
                                       torch.cuda.max_memory_allocated() / 1000 / 1000,
                                       torch.cuda.max_memory_reserved() / 1000 / 1000)
@@ -202,3 +212,11 @@ class CombinedTrainer(BaseTrainer):
             "  D {L.disc.avg:7.3f}  G {L.gen.avg:7.3f}"
             "  B_stl {S.B_style.avg:5.1f}  B_trg {S.B_target.avg:5.1f}"
             .format(step=self.step, L=losses, D=discs, S=stats))
+
+        return {
+            'step': self.step,
+            'pixel_avg': losses.pixel.avg,
+            'contrastive_avg': losses.contrastive.avg,
+            'disc_avg': losses.disc.avg,
+            'gen_avg': losses.gen.avg
+        }

@@ -12,6 +12,7 @@ import torchvision.transforms as transforms
 from model.modules import weights_init
 import logging
 from vae.vae_model import Model, CombTrain_VQ_VAE_dataset
+import pandas as pd
 
 # 设置日志
 logging.basicConfig(level=logging.INFO)
@@ -59,6 +60,10 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
     train_vq_loss = []
     steps_record = []
 
+    # 创建一个DataFrame用于存储每一步的损失值
+    loss_records_df = pd.DataFrame(columns=['step', 'recon_error', 'perplexity', 'vq_loss'])
+    excel_file_path = f'../weight/vae_training_loss_{num_training_updates}.xlsx'
+
     # 训练循环
     for i in range(num_training_updates):
         data = next(iter(train_loader))
@@ -80,28 +85,29 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
         train_vq_loss.append(vq_loss.mean().item())
         steps_record.append(i + 1)
 
-        if (i + 1) % 100 == 0:
+        if (i + 1) % 10 == 0:
             logger.info(f'{i + 1} iterations')
-            logger.info(f'recon_error: {np.mean(train_res_recon_error[-100:]):.3f}')
-            logger.info(f'perplexity: {np.mean(train_res_perplexity[-100:]):.3f}')
-            logger.info(f'vq_loss: {np.mean(train_vq_loss[-100:]):.3f}')
+            logger.info(f'recon_error: {np.mean(train_res_recon_error[-10:]):.3f}')
+            logger.info(f'perplexity: {np.mean(train_res_perplexity[-10:]):.3f}')
+            logger.info(f'vq_loss: {np.mean(train_vq_loss[-10:]):.3f}')
             print("")
+
+            # 将当前步的损失值记录到DataFrame中
+            loss_record = {
+                'step': i + 1,
+                'recon_error': np.mean(train_res_recon_error[-10:]),
+                'perplexity': np.mean(train_res_perplexity[-10:]),
+                'vq_loss': np.mean(train_vq_loss[-10:])
+            }
+            record_df = pd.DataFrame([loss_record])
+            loss_records_df = pd.concat([loss_records_df, record_df], ignore_index=True)
+            # 将DataFrame写入到Excel文件中
+            loss_records_df.to_excel(excel_file_path, index=False)
 
         if (i + 1) % 500 == 0:
             save_checkpoint(model, optimizer, f'../weight/VQ-VAE_chn_step_{i + 1}.pth')
 
     save_checkpoint(model, optimizer, '../weight/VQ-VAE_chn_last.pth')
-    # 创建一个DataFrame，将损失值存储进去
-    data = {
-        'step': steps_record,
-        'recon_error': train_res_recon_error,
-        'perplexity': train_res_perplexity,
-        'vq_loss': train_vq_loss
-    }
-    import pandas as pd
-    df = pd.DataFrame(data)
-    # 将DataFrame存储到Excel文件中
-    df.to_csv(f'../weight/training_loss_values_{num_training_updates}.csv', index=False)
 
     # 验证部分
     logger.info('Validation started')
