@@ -191,6 +191,9 @@ def train(args, cfg):
 
     g_optim = optim.Adam(gen.parameters(), lr=cfg.g_lr, betas=cfg.adam_betas)
     d_optim = optim.Adam(disc.parameters(), lr=cfg.d_lr, betas=cfg.adam_betas)
+    # 尝试 SGD loss 在0.65-0.7 就不会下降了
+    # g_optim = optim.SGD(gen.parameters(), lr=cfg.g_lr, momentum=0.9)
+    # d_optim = optim.SGD(disc.parameters(), lr=cfg.d_lr, momentum=0.9)
 
     # 为生成器模型的优化器设置学习率调度器
     gen_scheduler = torch.optim.lr_scheduler.StepLR(g_optim, step_size=cfg['step_size'], gamma=cfg['gamma'])
