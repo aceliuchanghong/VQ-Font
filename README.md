@@ -187,3 +187,9 @@ ufuu_ # 没有见过的字符和字体
 TODO:之后再看
 ```
 
+```
+vscode远程开发步骤
+1.ssh <服务器登录名>@<公网ip>
+2.输入服务器登录密码或者修改config 文件指定端口
+3.往~/.ssh/authorized_keys里面添加C:\Users\【用户名】\.ssh”，访问“id_rsa.pub的数据(没有可以ssh-keygen)
+```
