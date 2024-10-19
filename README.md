@@ -8,6 +8,7 @@ at ```./Paper_IMG/``` | [Arxiv](https://arxiv.org/abs/2309.00827)｜[CVF](https:
 ```shell
 conda create -n VQFont python=3.7
 conda activate VQFont
+source activate VQFont
 cd VQ-Font
 pip install -r requirements.txt
 pip freeze > requirements.txt
@@ -17,9 +18,10 @@ pip freeze > requirements.txt
 
 - https://github.com/aceliuchanghong/free-font
 
-```shell
+操作步骤
+```
 1.下载字体
-2.字体转图片(gen_imgs_from_ttf.py)
+2.字体转图片(使用datasets/f2p.py 其中datasets/gen_imgs_from_ttf.py这个提取的字符图片不知道为什么vae不行),字体文件夹切分(datasets/split_folder.py),开始训练vae模型(vae/vae_train.py)
 3.字体json生成(to_hex.py)
 4.图片文件夹划分
 ```
@@ -192,4 +194,11 @@ vscode远程开发步骤
 1.ssh <服务器登录名>@<公网ip>
 2.输入服务器登录密码或者修改config 文件指定端口
 3.往~/.ssh/authorized_keys里面添加C:\Users\【用户名】\.ssh”，访问“id_rsa.pub的数据(没有可以ssh-keygen)
+
+there is no formatter for 'python' files installed
+setting.json里面
+"[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true
+  }
 ```

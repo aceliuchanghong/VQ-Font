@@ -28,10 +28,10 @@ def get_filtered_chars(fontpath):
 
     for char in defined_chars:
         img = np.array(render(ttf, char))
-        if img.mean() == 255.:
+        if img.mean() == 255.0:
             pass
         else:
-            avail_chars.append(char.encode('utf-16', 'surrogatepass').decode('utf-16'))
+            avail_chars.append(char.encode("utf-16", "surrogatepass").decode("utf-16"))
 
     return avail_chars
 
@@ -60,7 +60,7 @@ def render(font, char, size=(128, 128), pad=20):
 
 
 def font2image(input_file, output_paths, characters, size):
-    input_file_name = input_file.split('/')[-1].split('.')[0]
+    input_file_name = input_file.split("/")[-1].split(".")[0]
     # print('mmL:', input_file_name)
     output_path = os.path.join(output_paths, input_file_name)
     print(output_path)
@@ -75,18 +75,25 @@ def font2image(input_file, output_paths, characters, size):
         rtext = font.render(word, True, (0, 0, 0), (255, 255, 255))
 
         if word in AZ:  # for uppercase letter
-            word = word + '+'
+            word = word + "+"
         pygame.image.save(rtext, os.path.join(output_path, word + ".png"))
-
+        if not os.path.exists(os.path.join(output_path, word + ".png")):
+            print(f"{word} failed")
+    # tmd,是不是这个函数删除了老子图片
     remove_duplicated_images(output_path)
     process_image(output_path, size)
+    i = 0
+    for word in characters:
+        if not os.path.exists(os.path.join(output_path, word + ".png")):
+            i += 1
+            print(f"{word} failed {i}")
 
 
 def remove_duplicated_images(path):
     while True:
         files = os.listdir(path)
         if len(files) == 0:
-            print('!!!!!!!!!!!!!!!!!!error:{}'.format(path))
+            print("!!!!!!!!!!!!!!!!!!error:{}".format(path))
             break
         file_sizes = []
         for file in files:
@@ -104,7 +111,7 @@ def remove_duplicated_images(path):
 
 
 def load_image(path):
-    image = Image.open(path).convert('L')
+    image = Image.open(path).convert("L")
     image = np.array(image)
     return image
 
@@ -172,7 +179,7 @@ def resize_image(image_cut, size):
 
 
 def pad_image(image_resized, size):
-    back = Image.new('L', (size, size), color=255)
+    back = Image.new("L", (size, size), color=255)
     h_r, v_r = image_resized.size
     h = int((size - h_r) / 2)
     v = int((size - v_r) / 2)
@@ -196,7 +203,7 @@ def remove_empty_floder(path):
     for file in files:
         if not os.listdir(os.path.join(path, file)):
             os.rmdir(os.path.join(path, file))
-            print(file, ' |removed')
+            print(file, " |removed")
     print("done!")
 
 
@@ -205,9 +212,9 @@ def check_image_exists(path, characters):
     AZ = [chr(i) for i in range(0x0041, 0x005A + 1)]
     for word in characters:
         if word in AZ:
-            word = word + '+'
-        image = word + '.png'
+            word = word + "+"
+        image = word + ".png"
         image_path = os.path.join(path, image)
         if not os.path.exists(image_path):
-            print('no ', word)
-    print('done!')
+            print("no ", word)
+    print("done!")

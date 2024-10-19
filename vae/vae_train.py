@@ -147,16 +147,18 @@ def save_image(img, filepath):
 
 
 def main():
-    train_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_train/'
-    val_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_val/'
-    # train_imgs_path = '../z_using_files/content_font/SourceHanSerifCN_train/'
-    # val_imgs_path = '../z_using_files/content_font/SourceHanSerifCN_val/'
+    # train_imgs_path = '../z_using_files/f2p_imgs/LXGWWenKaiGB-Light_train/'
+    # val_imgs_path = '../z_using_files/f2p_imgs/LXGWWenKaiGB-Light_val/'
+    
+    train_imgs_path = '../z_using_files/f2p_imgs/SourceHanSerifCN-Medium_train/'
+    val_imgs_path = '../z_using_files/f2p_imgs/SourceHanSerifCN-Medium_val/'
+    
     # model_path = '../weight/VQ-VAE_chn_best.pth'
     model_path = None
     train_model(
         train_imgs_path,
         val_imgs_path,
-        num_training_updates=26000,
+        num_training_updates=40000,
         batch_size=1536,
         model_path=model_path,
         decay=0.999
