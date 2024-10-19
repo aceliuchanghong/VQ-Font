@@ -35,8 +35,12 @@ if __name__ == '__main__':
     cd datasets
     python split_folder.py
     """
-    input_directory = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light'
-    train_directory = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_train'
-    val_directory = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_val'
+    # input_directory = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light'
+    # train_directory = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_train'
+    # val_directory = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_val'
+    input_directory = '/mnt/data/llch/VQ-Font/z_using_files/content_font/SourceHanSerifCN-Medium15531'
+    train_directory = '/mnt/data/llch/VQ-Font/z_using_files/content_font/SourceHanSerifCN_train'
+    val_directory = '/mnt/data/llch/VQ-Font/z_using_files/content_font/SourceHanSerifCN_val'
 
     split_content_folders(input_directory, train_directory, val_directory)
+    # split_content_folders(input_directory, train_directory, val_directory, train_count=13500, val_count=2031)

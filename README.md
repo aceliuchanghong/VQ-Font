@@ -19,7 +19,9 @@ pip freeze > requirements.txt
 
 ```shell
 1.下载字体
-2.字体转图片(font2image_new.py)
+2.字体转图片(gen_imgs_from_ttf.py)
+3.字体json生成(to_hex.py)
+4.图片文件夹划分
 ```
 
 ## Data Preparation
@@ -79,7 +81,11 @@ pip freeze > requirements.txt
 
 ### Build meta files and lmdb environment
 
-Run script ```./build_trainset.sh```
+1. 需要用`dataset/font2image.py`之类的先获取字体图片
+
+2. 参照下面获取meta数据
+
+Run script ```./build_trainset.sh``` or 查看 `./build_dataset/build_meta4train.py`里面的示例
 
  ```
   python3 ./build_dataset/build_meta4train.py \
@@ -93,9 +99,17 @@ Run script ```./build_trainset.sh```
 
 ## Training
 
-The training process is divided into two stages: 1）Pre-training the content encoder and codebook
-via [VQ-VAE](https://arxiv.org/abs/1711.00937), 2）Training the few shot font generation model
+The training process is divided into two stages:
+
+1）Pre-training the content encoder and codebook
+via [VQ-VAE](https://arxiv.org/abs/1711.00937)
+
+`cd vae .. python vae_train.py` (在vae的训练过程中,其实是训练emb模型,所以只需要content_font的字体图片即可)
+
+2）Training the few shot font generation model
 via [GAN](https://dl.acm.org/doi/abs/10.1145/3422622).
+
+`python3 train.py params....`
 
 ### Pre-train VQ-VAE
 

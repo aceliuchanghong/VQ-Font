@@ -104,7 +104,7 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
             # 将DataFrame写入到Excel文件中
             loss_records_df.to_excel(excel_file_path, index=False)
 
-        if (i + 1) % 500 == 0:
+        if (i + 1) % 100 == 0:
             save_checkpoint(model, optimizer, f'../weight/VQ-VAE_chn_step_{i + 1}.pth')
 
     save_checkpoint(model, optimizer, '../weight/VQ-VAE_chn_last.pth')
@@ -127,9 +127,9 @@ def train_model(train_imgs_path, val_imgs_path, num_training_updates=10000,
             valid_quantize)
         return valid_originals, valid_reconstructions
 
-    org, recon_out = validate_model(model, validation_loader)
-    save_image(make_grid((org + 0.5).cpu().data), '../z_using_files/imgs/00.png')
-    save_image(make_grid((recon_out + 0.5).cpu().data), '../z_using_files/imgs/01.png')
+    original, reconstruct = validate_model(model, validation_loader)
+    save_image(make_grid((original + 0.5).cpu().data), '../z_using_files/imgs/00.png')
+    save_image(make_grid((reconstruct + 0.5).cpu().data), '../z_using_files/imgs/01.png')
 
 
 def save_checkpoint(model, optimizer, filepath):
@@ -149,6 +149,8 @@ def save_image(img, filepath):
 def main():
     train_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_train/'
     val_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_val/'
+    # train_imgs_path = '../z_using_files/content_font/SourceHanSerifCN_train/'
+    # val_imgs_path = '../z_using_files/content_font/SourceHanSerifCN_val/'
     # model_path = '../weight/VQ-VAE_chn_best.pth'
     model_path = None
     train_model(
