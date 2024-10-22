@@ -1,89 +1,132 @@
 import os
 import sys
-
-sys.path.append("../")
+from torch.utils.data import Dataset
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 import logging
-from vae.vae_model import Model, CombTrain_VQ_VAE_dataset
-from vae.vae_train import save_image
+from PIL import Image
+
+sys.path.append("../")
+
+from vae.vae_model import Model
+
 
 # 设置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# 修改保存图片的部分，使每个张量单独保存为图片
-def save_images_per_tensor(images, pic_name, save_path='../z_using_files/imgs/'):
-    os.makedirs(save_path, exist_ok=True)  # 确保保存路径存在
-    for idx, image in enumerate(images):
-        image_path = os.path.join(save_path, f'{pic_name}_recon_{idx}.png')
-        save_image(image, image_path)
-        print(f'Saved image {idx} at {image_path}')
+class CombTrain_VQ_VAE_dataset_with_name(Dataset):
+
+    def __init__(self, root, transform=None):
+        self.img_path = root
+        self.transform = transform
+        self.imgs = self.read_file(self.img_path)
+
+    def read_file(self, path):
+        """从文件夹中读取数据"""
+        files_list = os.listdir(path)
+        file_path_list = [os.path.join(path, img) for img in files_list]
+        file_path_list.sort()
+        return file_path_list
+
+    def __getitem__(self, index):
+        img_name = self.imgs[index]
+        # print(img_name[-5:-4])  # 一..输出文字
+        img = Image.open(img_name)
+        if self.transform is not None:
+            img = self.transform(img)  # Tensor [C H W] [1 128 128]
+        return img, img_name[-5:-4]
+
+    def __len__(self):
+        return len(self.imgs)
 
 
-def validate_model(model, validation_loader):
+def save_image_new(img, filepath, size=(96, 96)):
+    # 调整图像尺寸为 96x96
+    resize_transform = transforms.Resize(size)
+    img = resize_transform(img)  # 调整大小
+
+    npimg = img.numpy()
+    npimg = np.clip(npimg, 0, 1)  # 确保数值在0..1范围内
+
+    # 如果是灰度图像（1通道），去掉通道维度
+    if npimg.shape[0] == 1:
+        npimg = npimg.squeeze(0)  # 移除通道维度（灰度图）
+        plt.imsave(filepath, npimg, cmap="gray")  # 以灰度图保存
+    else:
+        plt.imsave(filepath, np.transpose(npimg, (1, 2, 0)))  # 保存为RGB图像
+
+
+def validate_model(model, validation_loader, device):
     model.eval()
-    all_originals = []
-    all_reconstructions = []
+    valid_originals, name = next(iter(validation_loader))
+    valid_originals = valid_originals.to(device)
+    vq_output_eval = model._encoder(valid_originals)
+
+    _, valid_quantize, _, _ = model._vq_vae(vq_output_eval)
+
+    valid_reconstructions = model._decoder(valid_quantize)
+
+    return valid_originals, valid_reconstructions, name
+
+
+def valid_model(
+    val_imgs_path,
+    embedding_dim=256,
+    num_embeddings=100,
+    commitment_cost=0.25,
+    decay=0.0,
+    model_path=None,
+    batch_size=16,
+    batch_size_names=[],
+):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-
-    # 遍历整个 validation_loader，逐批处理
-    for batch in validation_loader:
-        batch = batch.to(device)
-        # 编码并量化每个批次
-        vq_output_eval = model._encoder(batch)
-        _, quantize, _, _ =  model._vq_vae(
-            vq_output_eval)
-        # 解码每个批次
-        reconstructions =  model._decoder(quantize)
-
-        # 收集原始图像和重构图像
-        all_originals.append(batch)
-        all_reconstructions.append(reconstructions)
-
-    # 将所有批次的输出合并为单个张量
-    all_originals = torch.cat(all_originals, dim=0)
-    all_reconstructions = torch.cat(all_reconstructions, dim=0)
-
-    return all_originals, all_reconstructions
-
-
-def valid_model(val_imgs_path,
-                embedding_dim=256,
-                num_embeddings=100,
-                commitment_cost=0.25,
-                decay=0.0,
-                model_path=None):
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    pic_name = 'best'
+    pic_name = "best"
     model = Model(num_embeddings, embedding_dim, commitment_cost, decay).to(device)
     if model_path is not None:
         checkpoint = torch.load(model_path)
-        model.load_state_dict(checkpoint['model_state_dict'])
+        model.load_state_dict(checkpoint["model_state_dict"])
         logger.info(f"Loaded model and optimizer from {model_path}")
-        pic_name = os.path.basename(model_path).replace("VQ-VAE_chn_step", "S").replace(".pth", '')
+        pic_name = (
+            os.path.basename(model_path)
+            .replace("VQ-VAE_chn_step", "S")
+            .replace(".pth", "")
+        )
 
-    logger.info('Validation started')
-    tensorize_transform = transforms.Compose([
-        transforms.Resize((128, 128)),
-        transforms.ToTensor()
-    ])
-    val_dataset = CombTrain_VQ_VAE_dataset(val_imgs_path, transform=tensorize_transform)
-    validation_loader = DataLoader(val_dataset, batch_size=16, shuffle=True,
-                                   drop_last=True, pin_memory=True)
+    logger.info("Gen started")
+    tensorize_transform = transforms.Compose(
+        [transforms.Resize((128, 128)), transforms.ToTensor()]
+    )
+    val_dataset = CombTrain_VQ_VAE_dataset_with_name(
+        val_imgs_path, transform=tensorize_transform
+    )
+    validation_loader = DataLoader(
+        val_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        drop_last=True,
+        pin_memory=True,
+    )
 
-    org, recon_out = validate_model(model, validation_loader)
-    save_images_per_tensor((recon_out + 0.5).cpu().data, pic_name)
+    _, recon_out, names = validate_model(model, validation_loader, device)
+    recon_out = (recon_out + 0.5).cpu().data
+    output_dir = f"../z_using_files/imgs_2/{pic_name}"
+    os.makedirs(output_dir, exist_ok=True)
+
+    for i, img in enumerate(recon_out):
+        save_image_new(img, f"{output_dir}/{names[i]}.png")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     cd vae
     python vae_valid_pic.py
     """
-    val_imgs_path = '../z_using_files/imgs/content_images/LXGWWenKaiGB-Light_val/'
-    model_path = '../weight/VQ-VAE_chn_step_800.pth'
+    val_imgs_path = "../z_using_files/f2p_imgs/SourceHanSerifCN-Medium_val"
+    model_path = "../weight/VQ-VAE_chn_step_5000.pth"
 
     valid_model(val_imgs_path, model_path=model_path, decay=0.999)

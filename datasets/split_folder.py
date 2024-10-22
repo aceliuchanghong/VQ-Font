@@ -58,6 +58,4 @@ if __name__ == "__main__":
         input_directory,
         train_directory,
         val_directory,
-        train_count=10010,
-        val_count=1001,
     )

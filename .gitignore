@@ -166,3 +166,5 @@ z_using_files/imgs/content_font/
 z_using_files/f2p_imgs/
 weight/VQ-VAE_chn_*.pth
 !weight/VQ-VAE_chn_best.pth
+z_using_files/imgs/*.png
+z_using_files/imgs_2/*

@@ -2,7 +2,7 @@
 import argparse
 from ttf_utils import *
 
-with open('datasets/char_all_15000.txt','r') as f:
+with open('datasets/Chinese_characters_3500.txt','r') as f:
     char2img_list = f.read()
 
 if __name__ == '__main__':
