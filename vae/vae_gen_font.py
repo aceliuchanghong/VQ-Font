@@ -82,7 +82,6 @@ def valid_model(
     decay=0.0,
     model_path=None,
     batch_size=16,
-    batch_size_names=[],
 ):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     pic_name = "best"
@@ -127,6 +126,6 @@ if __name__ == "__main__":
     python vae_valid_pic.py
     """
     val_imgs_path = "../z_using_files/f2p_imgs/SourceHanSerifCN-Medium_val"
-    model_path = "../weight/VQ-VAE_chn_step_5000.pth"
+    model_path = "../weight/VQ-VAE_chn_best-sy2.pth"
 
     valid_model(val_imgs_path, model_path=model_path, decay=0.999)
