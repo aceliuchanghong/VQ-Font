@@ -35,23 +35,20 @@ if __name__ == "__main__":
     """
     conda activate VQFont
     cd datasets
-    python split_folder.py
+    python split_folder.py --input_directory ../z_using_files/f2p_imgs/Alibaba-PuHuiTi-Medium
     """
-    # input_directory = '../z_using_files/imgs/content_font/LXGWWenKaiGB-Light15531'
-    # train_directory = '../z_using_files/imgs/content_font/LXGWWenKaiGB-Light_train'
-    # val_directory = '../z_using_files/imgs/content_font/LXGWWenKaiGB-Light_val'
 
-    # input_directory = '../z_using_files/imgs/content_font/SourceHanSerifCN-Medium15531'
-    # train_directory = '../z_using_files/imgs/content_font/SourceHanSerifCN_train'
-    # val_directory = '../z_using_files/imgs/content_font/SourceHanSerifCN_val'
+    import argparse
 
-    input_directory = "../z_using_files/f2p_imgs/LXGWWenKaiGB-Light"
-    train_directory = "../z_using_files/f2p_imgs/LXGWWenKaiGB-Light_train"
-    val_directory = "../z_using_files/f2p_imgs/LXGWWenKaiGB-Light_val"
+    parser = argparse.ArgumentParser(
+        description="Split folders into train and validation sets"
+    )
+    parser.add_argument("--input_directory", type=str, help="Path to input directory")
+    args = parser.parse_args()
 
-    input_directory = "../z_using_files/f2p_imgs/SourceHanSerifCN-Medium"
-    train_directory = "../z_using_files/f2p_imgs/SourceHanSerifCN-Medium_train"
-    val_directory = "../z_using_files/f2p_imgs/SourceHanSerifCN-Medium_val"
+    input_directory = args.input_directory
+    train_directory = input_directory + "_train"
+    val_directory = input_directory + "_val"
 
     # split_content_folders(input_directory, train_directory, val_directory)
     split_content_folders(

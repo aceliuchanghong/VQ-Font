@@ -169,3 +169,6 @@ weight/VQ-VAE_chn_*.pth
 !weight/VQ-VAE_chn_best-sy2.pth
 z_using_files/imgs/*.png
 z_using_files/imgs_2/*
+z_using_files/content_font/SourceHanSansCN-Medium.otf
+z_using_files/content_font/Alibaba-PuHuiTi-Medium.ttf
+vae/lightning_logs/

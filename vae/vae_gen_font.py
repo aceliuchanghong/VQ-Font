@@ -8,14 +8,19 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 import logging
 from PIL import Image
+from torchvision.utils import make_grid
 
 sys.path.append("../")
-
+from vae.vae_train import save_image
 from vae.vae_model import Model
 
 
 # 设置日志
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 logger = logging.getLogger(__name__)
 
 
@@ -61,17 +66,38 @@ def save_image_new(img, filepath, size=(96, 96)):
         plt.imsave(filepath, np.transpose(npimg, (1, 2, 0)))  # 保存为RGB图像
 
 
-def validate_model(model, validation_loader, device):
+def validate_model(
+    model, validation_loader, device, output_dir="../z_using_files/imgs_2", pic_name="0"
+):
     model.eval()
-    valid_originals, name = next(iter(validation_loader))
-    valid_originals = valid_originals.to(device)
-    vq_output_eval = model._encoder(valid_originals)
 
-    _, valid_quantize, _, _ = model._vq_vae(vq_output_eval)
+    # 遍历 validation_loader 中的所有 batch
+    for batch_idx, (valid_originals, names) in enumerate(validation_loader):
+        valid_originals = valid_originals.to(device)
+        logger.info(f"names:{names}")
 
-    valid_reconstructions = model._decoder(valid_quantize)
+        # 编码
+        vq_output_eval = model._encoder(valid_originals)
+        _, valid_quantize, _, _ = model._vq_vae(vq_output_eval)
 
-    return valid_originals, valid_reconstructions, name
+        # 解码
+        valid_reconstructions = model._decoder(valid_quantize)
+
+        # 保存当前batch的图片
+        os.makedirs(f"{output_dir}/original", exist_ok=True)
+        save_image(
+            make_grid((valid_originals + 0.5).cpu().data),
+            f"{output_dir}/original/{pic_name}_original_batch_{batch_idx}.png",
+        )
+        os.makedirs(f"{output_dir}/{pic_name}", exist_ok=True)
+        for i, img in enumerate(valid_reconstructions):
+            save_image_new(
+                img.detach().cpu(), f"{output_dir}/{pic_name}/{names[i]}.png"
+            )
+
+        # 释放显存，避免累积
+        del valid_originals, valid_quantize, valid_reconstructions
+        torch.cuda.empty_cache()
 
 
 def valid_model(
@@ -111,21 +137,20 @@ def valid_model(
         pin_memory=True,
     )
 
-    _, recon_out, names = validate_model(model, validation_loader, device)
-    recon_out = (recon_out + 0.5).cpu().data
-    output_dir = f"../z_using_files/imgs_2/{pic_name}"
-    os.makedirs(output_dir, exist_ok=True)
-
-    for i, img in enumerate(recon_out):
-        save_image_new(img, f"{output_dir}/{names[i]}.png")
+    validate_model(model, validation_loader, device, pic_name=pic_name)
 
 
 if __name__ == "__main__":
     """
     cd vae
-    python vae_valid_pic.py
+    python vae_gen_font.py
     """
-    val_imgs_path = "../z_using_files/f2p_imgs/SourceHanSerifCN-Medium_val"
+
+    val_imgs_path = "../z_using_files/f2p_imgs/SourceHanSerifCN-Medium_train"
+    # val_imgs_path = "../z_using_files/f2p_imgs/SourceHanSerifCN-Medium_val"
+
     model_path = "../weight/VQ-VAE_chn_best-sy2.pth"
+
+    logger.info(f"{model_path}")
 
     valid_model(val_imgs_path, model_path=model_path, decay=0.999)
