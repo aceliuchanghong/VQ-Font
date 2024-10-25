@@ -60,6 +60,7 @@ def save_image_new(img, filepath, size=(96, 96)):
 
     # 如果是灰度图像（1通道），去掉通道维度
     if npimg.shape[0] == 1:
+        # print(f"first")
         npimg = npimg.squeeze(0)  # 移除通道维度（灰度图）
         plt.imsave(filepath, npimg, cmap="gray")  # 以灰度图保存
     else:
@@ -143,14 +144,26 @@ def valid_model(
 if __name__ == "__main__":
     """
     cd vae
-    python vae_gen_font.py
+    python vae_gen_font.py --val_imgs_path ../z_using_files/f2p_imgs/SourceHanSansCN-Medium_train --model_path ../weight/VQ-VAE_chn_best-sy2.pth
+    python vae_gen_font.py --val_imgs_path ../z_using_files/f2p_imgs/SourceHanSansCN-Medium_train --model_path ../weight/VQ-VAE_chn_best-hp.pth
     """
 
-    val_imgs_path = "../z_using_files/f2p_imgs/SourceHanSerifCN-Medium_train"
-    # val_imgs_path = "../z_using_files/f2p_imgs/SourceHanSerifCN-Medium_val"
+    import argparse
 
-    model_path = "../weight/VQ-VAE_chn_best-sy2.pth"
+    parser = argparse.ArgumentParser()
 
-    logger.info(f"{model_path}")
+    parser.add_argument(
+        "--val_imgs_path",
+        type=str,
+        default="../z_using_files/f2p_imgs/SourceHanSansCN-Medium_train",
+        help="Path to validation images directory",
+    )
+    parser.add_argument(
+        "--model_path",
+        type=str,
+        default="../weight/VQ-VAE_chn_best-sy2.pth",
+        help="Path to the trained model file",
+    )
 
-    valid_model(val_imgs_path, model_path=model_path, decay=0.999)
+    args = parser.parse_args()
+    valid_model(args.val_imgs_path, model_path=args.model_path, decay=0.999)

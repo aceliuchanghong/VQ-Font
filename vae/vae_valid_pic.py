@@ -83,11 +83,30 @@ def valid_model(
 if __name__ == "__main__":
     """
     cd vae
-    python vae_valid_pic.py
+    python vae_valid_pic.py --val_imgs_path ../z_using_files/f2p_imgs/SourceHanSansCN-Medium_train
     """
-    val_imgs_path = "../z_using_files/f2p_imgs/SourceHanSerifCN-Medium_val"
-    model_path_base = "../weight/"
-    model_files = glob.glob(os.path.join(model_path_base, "VQ-VAE_chn_*.pth"))
+    import argparse
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--val_imgs_path",
+        type=str,
+        default="../z_using_files/f2p_imgs/SourceHanSansCN-Medium_train",
+        help="Path to validation images directory",
+    )
+    parser.add_argument(
+        "--model_path_base",
+        type=str,
+        default="../weight/",
+        help="Path to the trained model file",
+    )
+
+    args = parser.parse_args()
+    val_imgs_path = args.val_imgs_path
+    model_path_base = args.model_path_base
+
+    model_files = glob.glob(os.path.join(model_path_base, "VQ-VAE_chn_step*.pth"))
     for model_path in model_files:
         print(model_path)
         valid_model(val_imgs_path, model_path=model_path, decay=0.999)

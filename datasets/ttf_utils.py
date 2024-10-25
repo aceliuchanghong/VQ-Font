@@ -80,7 +80,7 @@ def font2image(input_file, output_paths, characters, size):
         if not os.path.exists(os.path.join(output_path, word + ".png")):
             print(f"{word} failed")
     # tmd,是不是这个函数删除了老子图片
-    remove_duplicated_images(output_path)
+    # remove_duplicated_images(output_path)
     process_image(output_path, size)
     i = 0
     for word in characters:
