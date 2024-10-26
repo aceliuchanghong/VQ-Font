@@ -36,6 +36,7 @@ if __name__ == "__main__":
     conda activate VQFont
     cd datasets
     python split_folder.py --input_directory ../z_using_files/f2p_imgs/Alibaba-PuHuiTi-Medium
+    python split_folder.py --input_directory ../z_using_files/f2p_imgs/SourceHanSansCN-Medium
     """
 
     import argparse

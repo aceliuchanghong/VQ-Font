@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import argparse
-from ttf_utils import *
+import os
 
+from ttf_utils import *
 
 if __name__ == "__main__":
     """
@@ -31,8 +32,9 @@ if __name__ == "__main__":
     )
     opt = parser.parse_args()
     font_path = opt.font
+    os.makedirs(opt.out, exist_ok=True)
 
-    with open(opt.char_file, "r") as f:
+    with open(opt.char_file, "r", encoding='utf-8') as f:
         char2img_list = f.read()
     if not opt.out:
         image_file_path = os.path.dirname(font_path)
