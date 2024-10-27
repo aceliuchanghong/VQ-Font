@@ -21,6 +21,9 @@ class ContentEncoder(nn.Module):
     """
     def __init__(self, layers, sigmoid=False):
         super().__init__()
+        # 如果 layers 是一个包含多个神经网络层的列表，如：layers = [nn.Conv2d(3, 16, 3), nn.ReLU(), nn.Conv2d(16, 32, 3)]
+        # 通过 *layers 解包，将每一层传递给 nn.Sequential
+        # 等价于 self.net = nn.Sequential(nn.Conv2d(3, 16, 3), nn.ReLU(), nn.Conv2d(16, 32, 3))
         self.net = nn.Sequential(*layers)
         self.sigmoid = sigmoid
 
