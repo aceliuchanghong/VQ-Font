@@ -84,6 +84,7 @@ if __name__ == "__main__":
     """
     cd vae
     python vae_valid_pic.py --val_imgs_path ../z_using_files/f2p_imgs/SourceHanSansCN-Medium_train
+    python vae_valid_pic.py --val_imgs_path ../z_using_files/f2p_imgs/HYChaoCuSongJ_train
     """
     import argparse
 

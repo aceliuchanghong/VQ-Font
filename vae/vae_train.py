@@ -1,4 +1,5 @@
 import sys
+import argparse
 
 sys.path.append("../")
 from torchvision.utils import make_grid
@@ -181,20 +182,41 @@ def save_image(img, filepath):
 
 
 def main():
-    train_imgs_path = "../z_using_files/f2p_imgs/SourceHanSansCN-Medium_train/"
-    val_imgs_path = "../z_using_files/f2p_imgs/SourceHanSansCN-Medium_val/"
+    # train_imgs_path = "../z_using_files/f2p_imgs/SourceHanSansCN-Medium_train/"
+    # val_imgs_path = "../z_using_files/f2p_imgs/SourceHanSansCN-Medium_val/"
+
+    # train_imgs_path = "../z_using_files/f2p_imgs/HYChaoCuSongJ_train/"
+    # val_imgs_path = "../z_using_files/f2p_imgs/HYChaoCuSongJ_val/"
 
     # train_imgs_path = "../z_using_files/f2p_imgs/Alibaba-PuHuiTi-Medium_train/"
     # val_imgs_path = "../z_using_files/f2p_imgs/Alibaba-PuHuiTi-Medium_val/"
 
     # model_path = '../weight/VQ-VAE_chn_best.pth'
-    model_path = None
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--train_imgs_path",
+        type=str,
+        default="../z_using_files/f2p_imgs/HYChaoCuSongJ_train/",
+        help="Path to training images",
+    )
+    parser.add_argument(
+        "--val_imgs_path",
+        type=str,
+        default="../z_using_files/f2p_imgs/HYChaoCuSongJ_val/",
+        help="Path to validation images",
+    )
+    parser.add_argument(
+        "--model_path", type=str, default=None, help="Path to model weights"
+    )
+
+    args = parser.parse_args()
     train_model(
-        train_imgs_path,
-        val_imgs_path,
-        num_training_updates=8000,
+        args.train_imgs_path,
+        args.val_imgs_path,
+        num_training_updates=25000,
         batch_size=1536,
-        model_path=model_path,
+        model_path=args.model_path,
         decay=0.999,
     )
 
@@ -202,5 +224,6 @@ def main():
 if __name__ == "__main__":
     # cd vae
     # python vae_train.py
-    # nohup python vae_train.py>train.log &
+    # python vae_train.py --train_imgs_path ../z_using_files/f2p_imgs/HYChaoCuSongJ_train/ --val_imgs_path ../z_using_files/f2p_imgs/HYChaoCuSongJ_val/
+    # nohup python vae_train.py --train_imgs_path ../z_using_files/f2p_imgs/HYChaoCuSongJ_train/ --val_imgs_path ../z_using_files/f2p_imgs/HYChaoCuSongJ_val/ >train.log &
     main()

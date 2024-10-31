@@ -15,6 +15,7 @@ if __name__ == "__main__":
     python datasets/f2p.py --font z_using_files/content_font/SourceHanSansCN-Medium.otf --out z_using_files/f2p_imgs
     python datasets/f2p.py --font z_using_files/content_font/SourceHanSansCN-Medium.otf --out z_using_files/all_font_pics --char_file datasets/char_all_15000.txt --image_size 96
     mv z_using_files/imgs_2/VQ-VAE_chn_best-hp/*.png z_using_files/all_font_pics/SourceHanSansCN-Medium
+    python datasets/f2p.py --font z_using_files/content_font/HYChaoCuSongJ.ttf --out z_using_files/all_font_pics --char_file datasets/char_all_15000.txt --image_size 96
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--font", required=True, help="font path")

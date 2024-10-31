@@ -146,6 +146,7 @@ if __name__ == "__main__":
     cd vae
     python vae_gen_font.py --val_imgs_path ../z_using_files/f2p_imgs/SourceHanSansCN-Medium_train --model_path ../weight/VQ-VAE_chn_best-sy2.pth
     python vae_gen_font.py --val_imgs_path ../z_using_files/f2p_imgs/SourceHanSansCN-Medium_train --model_path ../weight/VQ-VAE_chn_best-hp.pth
+    python vae_gen_font.py --val_imgs_path ../z_using_files/f2p_imgs/HYChaoCuSongJ_train --model_path ../weight/VQ-VAE_chn_best-hychao.pth
     """
 
     import argparse

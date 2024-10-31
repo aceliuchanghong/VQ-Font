@@ -168,6 +168,8 @@ weight/VQ-VAE_chn_*.pth
 !weight/VQ-VAE_chn_best.pth
 !weight/VQ-VAE_chn_best-sy2.pth
 !weight/VQ-VAE_chn_best-hp.pth
+!weight/VQ-VAE_chn_perfect-hychao.pth
+!weight/VQ-VAE_chn_best-hychao.pth
 z_using_files/imgs/*.png
 z_using_files/imgs_2/*
 vae/lightning_logs/
