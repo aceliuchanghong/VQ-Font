@@ -24,6 +24,33 @@ pip freeze > requirements.txt
 2.字体转图片(使用datasets/f2p.py 其中datasets/gen_imgs_from_ttf.py这个提取的字符图片不知道为什么vae不行),字体文件夹切分(datasets/split_folder.py),开始训练vae模型(vae/vae_train.py)
 3.字体json生成(to_hex.py)
 4.图片文件夹划分
+
+
+生成all-3500:
+python datasets/f2p.py --font z_using_files/content_font/HYDaSongJ-2.ttf --out z_using_files/f2p_imgs
+获取train:
+python split_folder.py --input_directory ../z_using_files/f2p_imgs/HYDaSongJ-2
+开始训练:
+nohup python vae_train.py --train_imgs_path ../z_using_files/f2p_imgs/HYDaSongJ-2_train/ --val_imgs_path ../z_using_files/f2p_imgs/HYDaSongJ-2_val/ >train.log &
+验证筛选:
+python vae_valid_pic.py --val_imgs_path ../z_using_files/f2p_imgs/HYDaSongJ-2_train
+生成图片:
+python vae_gen_font.py --val_imgs_path ../z_using_files/f2p_imgs/HYDaSongJ-2_train --model_path ../weight/VQ-VAE_chn_best-HYJ.pth
+生成all-15500:
+python datasets/f2p.py --font z_using_files/content_font/HYDaSongJ-2.ttf --out z_using_files/all_font_pics --char_file datasets/char_all_15000.txt --image_size 96
+复制移动:
+rm z_using_files/all_font_pics/combine/*
+cp z_using_files/all_font_pics/HYDaSongJ-2/*.png z_using_files/all_font_pics/combine
+cp z_using_files/imgs_2/VQ-VAE_chn_best-HYJ/*.png z_using_files/all_font_pics/combine
+打包:
+tar czvf 00.tar.gz z_using_files/all_font_pics/combine/*.png
+tar czvf 01.tar.gz z_using_files/all_font_pics/HYDaSongJ-2/*.png
+
+vps2:
+cd /mnt/data/llch/FontDiffuser/outputs/HYJ_ai
+tar zxvf 01/00...
+source activate fontdiffuser
+python run_gen.py --input outputs/HYJ_ai/ --name HYJ_ai --v v1.0
 ```
 
 ## Data Preparation
